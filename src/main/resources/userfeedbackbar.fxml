@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.text.Text?>
+<ScrollPane fx:id="containerPane" prefWidth="1" vbarPolicy="NEVER" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+    <padding>
+        <Insets top="3" right="11" bottom="1" left="11"/>
+    </padding>
+
+    <Text fx:id="userFeedbackBar" text="Welcome to Mine Sweeper!" />
+
+</ScrollPane>

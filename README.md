@@ -1,4 +1,4 @@
-# group13
+# minesweeper
 
 
 
@@ -15,14 +15,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://gitlab-edu.supsi.ch/dti-isin/labingsw/labingsw01/20242025/minesweeper/group13.git
+git remote add origin https://gitlab-edu.supsi.ch/dti-isin/labingsw/labingsw01/demos/labs/minesweeper.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-- [ ] [Set up project integrations](https://gitlab-edu.supsi.ch/dti-isin/labingsw/labingsw01/20242025/minesweeper/group13/-/settings/integrations)
+- [ ] [Set up project integrations](https://gitlab-edu.supsi.ch/dti-isin/labingsw/labingsw01/demos/labs/minesweeper/-/settings/integrations)
 
 ## Collaborate with your team
 
