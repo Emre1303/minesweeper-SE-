@@ -29,7 +29,7 @@ public class GameModel extends AbstractModel
         return myself;
     }
 
-    /** (ri)inizializza matrici e contatori all’inizio di una nuova partita */
+
     private void initField() {
         hasMine       = new boolean[rows][cols];
         neighborCount = new int[rows][cols];
@@ -37,14 +37,14 @@ public class GameModel extends AbstractModel
         revealedCount = 0;
     }
 
-    /** EventHandler.newGame(): reset + piazzamento mine */
+
     @Override
     public void newGame() {
         initField();
         generateField();
     }
 
-    /** Genera il campo: reset, piazza mine, calcola neighborCount */
+
     private void generateField() {
         // 1) reset
         for (int r = 0; r < rows; r++) {
@@ -64,7 +64,7 @@ public class GameModel extends AbstractModel
                 placed++;
             }
         }
-        // 3) calcola count per ogni cella non-mina
+
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 if (hasMine[r][c]) continue;
@@ -83,10 +83,6 @@ public class GameModel extends AbstractModel
         }
     }
 
-    /**
-     * Rivelazione di una cella:
-     * @return -1 se mina, altrimenti numero di mine adiacenti
-     */
     public int revealCell(int r, int c) {
         if (revealed[r][c]) return neighborCount[r][c];
         revealed[r][c] = true;
@@ -95,7 +91,7 @@ public class GameModel extends AbstractModel
         return neighborCount[r][c];
     }
 
-    /** @return true se tutte le celle non-mina sono state rivelate */
+
     public boolean isWin() {
         return revealedCount == (rows * cols - mines);
     }

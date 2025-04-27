@@ -1,9 +1,10 @@
 package ch.supsi.minesweeper.view;
 
 import ch.supsi.minesweeper.controller.EventHandler;
-import ch.supsi.minesweeper.model.AbstractModel;
+import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.model.PlayerEventHandler;
+import ch.supsi.minesweeper.model.AbstractModel;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -18,7 +19,8 @@ public class GameBoardViewFxml implements ControlledFxView {
     private static GameBoardViewFxml myself;
 
     private PlayerEventHandler playerEventHandler;
-    private GameModel gameModel;
+    private GameEventHandler   gameEventHandler;
+    private GameModel          gameModel;
 
     @FXML
     private GridPane containerPane;
@@ -55,32 +57,57 @@ public class GameBoardViewFxml implements ControlledFxView {
     @Override
     public void initialize(EventHandler eventHandler, AbstractModel model) {
         this.playerEventHandler = (PlayerEventHandler) eventHandler;
-        this.gameModel          = (GameModel) model;
+        this.gameEventHandler   = (GameEventHandler)    eventHandler;
+        this.gameModel          = (GameModel)            model;
         setupGrid();
     }
-
 
     private void setupGrid() {
         for (Node node : containerPane.getChildren()) {
             if (node instanceof Button btn) {
-                Integer r = GridPane.getRowIndex(btn);
-                Integer c = GridPane.getColumnIndex(btn);
-                int row = (r == null ? 0 : r);
-                int col = (c == null ? 0 : c);
+                int row = GridPane.getRowIndex(btn) == null ? 0 : GridPane.getRowIndex(btn);
+                int col = GridPane.getColumnIndex(btn) == null ? 0 : GridPane.getColumnIndex(btn);
                 btn.setOnAction(evt -> revealCell(row, col, btn));
             }
         }
     }
 
-
     private void revealCell(int row, int col, Button btn) {
+        int result;
         if (gameModel.hasMineAt(row, col)) {
-            btn.setText("💣");
+            result = -1;
         } else {
-            int n = gameModel.getNeighborCountAt(row, col);
-            btn.setText(n > 0 ? String.valueOf(n) : "");
+            result = gameModel.getNeighborCountAt(row, col);
+        }
+        if (result < 0) {
+            btn.setText("💣");
+        } else if (result > 0) {
+            btn.setText(String.valueOf(result));
+        } else {
+            btn.setText("");
         }
         btn.setDisable(true);
+
+        if (result < 0) {
+            disableAll();
+            gameEventHandler.lose();
+        } else if (gameModel.isWin()) {
+            disableAll();
+            gameEventHandler.win();
+        }
+    }
+
+    private void disableAll() {
+        for (Node node : containerPane.getChildren()) {
+            if (node instanceof Button other) {
+                int row = GridPane.getRowIndex(other) == null ? 0 : GridPane.getRowIndex(other);
+                int col = GridPane.getColumnIndex(other) == null ? 0 : GridPane.getColumnIndex(other);
+                if (gameModel.hasMineAt(row, col)) {
+                    other.setText("💣");
+                }
+                other.setDisable(true);
+            }
+        }
     }
 
     @Override
@@ -90,7 +117,6 @@ public class GameBoardViewFxml implements ControlledFxView {
 
     @Override
     public void update() {
-        // Al newGame(): resetta tutte le celle a coperte
         for (Node node : containerPane.getChildren()) {
             if (node instanceof Button btn) {
                 btn.setText("");

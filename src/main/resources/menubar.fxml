@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <MenuBar fx:id="menuBar" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <Menu fx:id="fileMenu" mnemonicParsing="false" text="File">
-        <MenuItem fx:id="newMenuItem" mnemonicParsing="false" disable="true" text="New"/>
+        <MenuItem fx:id="newMenuItem" mnemonicParsing="false" disable="false" text="New"/>
         <MenuItem fx:id="openMenuItem" mnemonicParsing="false" disable="false" text="Open..."/>
         <SeparatorMenuItem fx:id="sep1" mnemonicParsing="false"/>
         <MenuItem fx:id="saveMenuItem" mnemonicParsing="false" disable="true" text="Save"/>
