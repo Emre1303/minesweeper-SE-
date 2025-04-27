@@ -40,7 +40,7 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
     @Override
     public void newGame() {
         Platform.runLater(() -> {
-            // Costruisci la lista di possibili conteggi
+
             List<Integer> options = IntStream
                     .rangeClosed(1, gameModel.getRows() * gameModel.getCols() - 1)
                     .boxed()

@@ -61,19 +61,19 @@ public class MenuBarViewFxml implements ControlledFxView {
     }
 
     private void createBehaviour() {
-        // New game
+
         this.newMenuItem.setOnAction(e -> this.gameEventHandler.newGame());
 
-        // Save
+
         this.saveMenuItem.setOnAction(e -> this.gameEventHandler.save());
 
-        // Help
+
         this.helpMenuItem.setOnAction(e -> this.gameEventHandler.help());
 
-        // About
+
         this.aboutMenuItem.setOnAction(e -> this.gameEventHandler.about());
 
-        // (eventuali altri menu… es. open, saveAs, quit, preferences)
+
     }
 
     @Override
@@ -83,7 +83,7 @@ public class MenuBarViewFxml implements ControlledFxView {
 
     @Override
     public void update() {
-        // aggiorna la view se serve
+
         System.out.println(getClass().getSimpleName() + " updated at " + System.currentTimeMillis());
     }
 }
