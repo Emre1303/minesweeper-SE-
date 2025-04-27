@@ -7,8 +7,12 @@ import ch.supsi.minesweeper.view.DataView;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ChoiceDialog;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class GameController implements GameEventHandler, PlayerEventHandler {
 
@@ -27,14 +31,36 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
         return myself;
     }
 
+    /** Registra le view all’avvio */
     public void initialize(List<DataView> views) {
         this.views = views;
     }
 
+    /** Nuova partita con scelta dinamica del numero di mine */
     @Override
     public void newGame() {
-        gameModel.newGame();
-        views.forEach(DataView::update);
+        Platform.runLater(() -> {
+            // Costruisci la lista di possibili conteggi
+            List<Integer> options = IntStream
+                    .rangeClosed(1, gameModel.getRows() * gameModel.getCols() - 1)
+                    .boxed()
+                    .collect(Collectors.toList());
+
+            ChoiceDialog<Integer> dialog = new ChoiceDialog<>(
+                    gameModel.getMines(), options);
+            dialog.setTitle("Nuova Partita");
+            dialog.setHeaderText("Imposta numero di mine");
+            dialog.setContentText(
+                    String.format("Seleziona quante mine (1–%d):", options.get(options.size() - 1))
+            );
+
+            Optional<Integer> result = dialog.showAndWait();
+            result.ifPresent(count -> {
+                gameModel.setMines(count);
+                gameModel.newGame();
+                views.forEach(DataView::update);
+            });
+        });
     }
 
     @Override
@@ -46,49 +72,48 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
     @Override
     public void help() {
         Platform.runLater(() -> {
-            Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle("Help");
-            a.setHeaderText("How to play");
-            a.setContentText(
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Help");
+            alert.setHeaderText("How to play");
+            alert.setContentText(
                     "• Left-click to reveal a cell\n" +
                             "• Right-click to flag/unflag\n" +
-                            "• Reveal all safe cells to win.\n" +
-                            "…"
+                            "• Reveal all safe cells to win."
             );
-            a.showAndWait();
+            alert.showAndWait();
         });
     }
 
     @Override
     public void about() {
         Platform.runLater(() -> {
-            Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle("About");
-            a.setHeaderText("Minesweeper JavaFX");
-            a.setContentText("©️ 2025 SUPSI – Memet Emre Yildirim, Niccolò Xhyra");
-            a.showAndWait();
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("About");
+            alert.setHeaderText("Minesweeper JavaFX");
+            alert.setContentText("© 2025 SUPSI – Niccolò Xhyra");
+            alert.showAndWait();
         });
     }
 
     @Override
     public void win() {
         Platform.runLater(() -> {
-            Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle("You Win!");
-            a.setHeaderText(null);
-            a.setContentText("Congratulations, you cleared the minefield!");
-            a.showAndWait();
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("You Win!");
+            alert.setHeaderText(null);
+            alert.setContentText("Congratulations, you cleared the minefield!");
+            alert.showAndWait();
         });
     }
 
     @Override
     public void lose() {
         Platform.runLater(() -> {
-            Alert a = new Alert(AlertType.ERROR);
-            a.setTitle("Game Over");
-            a.setHeaderText("Boom! You hit a mine.");
-            a.setContentText("Try again with File → New.");
-            a.showAndWait();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Game Over");
+            alert.setHeaderText("Boom! You hit a mine.");
+            alert.setContentText("Try again with File → New.");
+            alert.showAndWait();
         });
     }
 

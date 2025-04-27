@@ -2,7 +2,6 @@ package ch.supsi.minesweeper.model;
 
 import java.util.Random;
 
-
 public class GameModel extends AbstractModel
         implements GameEventHandler, PlayerEventHandler {
 
@@ -10,7 +9,7 @@ public class GameModel extends AbstractModel
 
     private final int rows  = 9;
     private final int cols  = 9;
-    private final int mines = 10;
+    private int       mines = 10;  // ora variabile
 
     private boolean[][] hasMine;
     private int[][]     neighborCount;
@@ -29,6 +28,32 @@ public class GameModel extends AbstractModel
         return myself;
     }
 
+    // --- nuovi metodi per interfaccia col controller ---
+
+    /** Righe della griglia */
+    public int getRows() {
+        return rows;
+    }
+
+    /** Colonne della griglia */
+    public int getCols() {
+        return cols;
+    }
+
+    /** Numero corrente di mine */
+    public int getMines() {
+        return mines;
+    }
+
+    /** Imposta quante mine piazzare nella prossima newGame() */
+    public void setMines(int mines) {
+        if (mines < 1 || mines >= rows * cols) {
+            throw new IllegalArgumentException("Numero di mine invalido: " + mines);
+        }
+        this.mines = mines;
+    }
+
+    // --- inizializzazione e generazione campo ---
 
     private void initField() {
         hasMine       = new boolean[rows][cols];
@@ -37,34 +62,31 @@ public class GameModel extends AbstractModel
         revealedCount = 0;
     }
 
-
     @Override
     public void newGame() {
         initField();
         generateField();
     }
 
-
     private void generateField() {
-        // 1) reset
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                hasMine[r][c]       = false;
-                neighborCount[r][c] = 0;
-                revealed[r][c]      = false;
-            }
-        }
-        // 2) piazza mine
+        // reset
+        for (int r = 0; r < rows; r++)
+            for (int c = 0; c < cols; c++)
+                hasMine[r][c] = false;
+
+        // piazza mine
         Random rnd = new Random();
         int placed = 0;
         while (placed < mines) {
-            int r = rnd.nextInt(rows), c = rnd.nextInt(cols);
+            int r = rnd.nextInt(rows);
+            int c = rnd.nextInt(cols);
             if (!hasMine[r][c]) {
                 hasMine[r][c] = true;
                 placed++;
             }
         }
 
+        // calcola neighborCount
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 if (hasMine[r][c]) continue;
@@ -83,6 +105,8 @@ public class GameModel extends AbstractModel
         }
     }
 
+    // --- rivelazione e vittoria/sconfitta ---
+
     public int revealCell(int r, int c) {
         if (revealed[r][c]) return neighborCount[r][c];
         revealed[r][c] = true;
@@ -91,12 +115,10 @@ public class GameModel extends AbstractModel
         return neighborCount[r][c];
     }
 
-
     public boolean isWin() {
         return revealedCount == (rows * cols - mines);
     }
 
-    // Getter per la view
     public boolean hasMineAt(int r, int c) {
         return hasMine[r][c];
     }
@@ -105,9 +127,10 @@ public class GameModel extends AbstractModel
         return neighborCount[r][c];
     }
 
-    // --- stub per l'interfaccia ---
+    // --- stub per le interfacce ---
+
     @Override public void save()   { /* TODO */ }
-    @Override public void move()   { /* gestito dal controller */ }
+    @Override public void move()   { /* gestito da controller */ }
     @Override public void help()   { /* no-op */ }
     @Override public void about()  { /* no-op */ }
     @Override public void win()    { /* no-op */ }
