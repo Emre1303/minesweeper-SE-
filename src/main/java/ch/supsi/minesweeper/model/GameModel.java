@@ -2,10 +2,7 @@ package ch.supsi.minesweeper.model;
 
 import java.util.Random;
 
-/**
- * Modello di backend per Campo Minato:
- * piazza mine, calcola contatori, gestisce revealCell e isWin.
- */
+
 public class GameModel extends AbstractModel
         implements GameEventHandler, PlayerEventHandler {
 
