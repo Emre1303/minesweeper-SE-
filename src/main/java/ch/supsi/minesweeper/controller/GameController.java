@@ -92,7 +92,7 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
                     """
                     Classic Minesweeper clone written in Java 17 / JavaFX 17.
 
-                    © 2025 Niccolò Xhyra – SUPSI
+                    © 2025 Memet Emre Yildirim, Niccolò Xhyra – SUPSI
                     Licensed under the MIT License.
                     """ );
             alert.showAndWait();
