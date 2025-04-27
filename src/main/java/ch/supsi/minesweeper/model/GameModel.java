@@ -82,7 +82,14 @@ public class GameModel extends AbstractModel
     }
 
 
+    public boolean hasMineAt(int r, int c) {
+        return hasMine[r][c];
+    }
 
+
+    public int getNeighborCountAt(int r, int c) {
+        return neighborCount[r][c];
+    }
 
 
 

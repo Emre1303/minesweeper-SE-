@@ -67,8 +67,6 @@ public class GameBoardViewFxml implements ControlledFxView {
                 Integer c = GridPane.getColumnIndex(btn);
                 int row = (r == null ? 0 : r);
                 int col = (c == null ? 0 : c);
-
-                
             }
         }
     }
