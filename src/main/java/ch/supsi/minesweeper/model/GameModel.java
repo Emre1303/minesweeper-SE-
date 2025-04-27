@@ -1,6 +1,7 @@
 package ch.supsi.minesweeper.model;
 
-public class GameModel extends AbstractModel implements GameEventHandler, PlayerEventHandler{
+public class GameModel extends AbstractModel
+        implements GameEventHandler, PlayerEventHandler {
 
     private static GameModel myself;
 
@@ -12,7 +13,6 @@ public class GameModel extends AbstractModel implements GameEventHandler, Player
         if (myself == null) {
             myself = new GameModel();
         }
-
         return myself;
     }
 
@@ -28,10 +28,18 @@ public class GameModel extends AbstractModel implements GameEventHandler, Player
 
     @Override
     public void move() {
-        return;
+
     }
 
-    // add all the relevant missing behaviours
-    // ...
+    @Override
+    public void help() {
+
+    }
+
+    @Override
+    public void about() {
+
+    }
+
 
 }
