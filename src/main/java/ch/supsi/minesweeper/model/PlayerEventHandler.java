@@ -6,7 +6,6 @@ public interface PlayerEventHandler extends EventHandler {
 
     void move();
 
-    // add all the relevant missing behaviours
-    // ...
+
 
 }
