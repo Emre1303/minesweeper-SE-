@@ -67,11 +67,20 @@ public class GameBoardViewFxml implements ControlledFxView {
                 Integer c = GridPane.getColumnIndex(btn);
                 int row = (r == null ? 0 : r);
                 int col = (c == null ? 0 : c);
+                btn.setOnAction(evt -> revealCell(row, col, btn));
             }
         }
     }
 
-
+    private void revealCell(int row, int col, Button btn) {
+        if (gameModel.hasMineAt(row, col)) {
+            btn.setText("💣");
+        } else {
+            int n = gameModel.getNeighborCountAt(row, col);
+            btn.setText(n > 0 ? String.valueOf(n) : "");
+        }
+        btn.setDisable(true);
+    }
 
 
     @Override
