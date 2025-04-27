@@ -90,7 +90,7 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
             Alert alert = new Alert(AlertType.INFORMATION);
             alert.setTitle("About");
             alert.setHeaderText("Minesweeper JavaFX");
-            alert.setContentText("© 2025 SUPSI – Niccolò Xhyra");
+            alert.setContentText("© 2025 SUPSI – Memet Emre Yildirim, Niccolò Xhyra");
             alert.showAndWait();
         });
     }
