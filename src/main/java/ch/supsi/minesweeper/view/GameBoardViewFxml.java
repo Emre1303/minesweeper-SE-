@@ -1,20 +1,24 @@
 package ch.supsi.minesweeper.view;
 
 import ch.supsi.minesweeper.controller.EventHandler;
-import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.model.PlayerEventHandler;
+import ch.supsi.minesweeper.model.AbstractModel;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GameBoardViewFxml implements ControlledFxView {
 
@@ -36,7 +40,13 @@ public class GameBoardViewFxml implements ControlledFxView {
     @FXML private Button cell70, cell71, cell72, cell73, cell74, cell75, cell76, cell77, cell78;
     @FXML private Button cell80, cell81, cell82, cell83, cell84, cell85, cell86, cell87, cell88;
 
-    private GameBoardViewFxml() {}
+    private final Map<Integer, Image> numberImages = new HashMap<>();
+    private Image flagImage;
+    private Image bombImage;
+
+    private GameBoardViewFxml() {
+        loadImages();
+    }
 
     public static GameBoardViewFxml getInstance() {
         if (myself == null) {
@@ -55,12 +65,21 @@ public class GameBoardViewFxml implements ControlledFxView {
         return myself;
     }
 
+    private void loadImages() {
+        for (int i = 1; i <= 8; i++) {
+            numberImages.put(i, new Image(getClass().getResourceAsStream("/images/" + i + ".png")));
+        }
+        flagImage = new Image(getClass().getResourceAsStream("/images/flag.png"));
+        bombImage = new Image(getClass().getResourceAsStream("/images/bomb.png"));
+    }
+
     @Override
     public void initialize(EventHandler eventHandler, AbstractModel model) {
         this.playerEventHandler = (PlayerEventHandler) eventHandler;
         this.gameEventHandler   = (GameEventHandler)   eventHandler;
-        this.gameModel          = (GameModel) model;
+        this.gameModel          = (GameModel)           model;
         setupGrid();
+        update(); // pulisce la griglia
     }
 
     private void setupGrid() {
@@ -75,16 +94,14 @@ public class GameBoardViewFxml implements ControlledFxView {
 
     private void handleClick(MouseEvent evt, int row, int col, Button btn) {
         if (evt.getButton() == MouseButton.SECONDARY) {
-            // rimuovi bandiera
             gameModel.toggleFlag(row, col);
             if (gameModel.isFlagged(row, col)) {
-                btn.setText("🚩");
+                setButtonGraphic(btn, flagImage);
             } else {
-                btn.setText("");
+                btn.setGraphic(null);
             }
             evt.consume();
         } else if (evt.getButton() == MouseButton.PRIMARY) {
-            // non permette di rivelare celle con flag
             if (!gameModel.isFlagged(row, col)) {
                 revealCell(row, col, btn);
             }
@@ -94,15 +111,15 @@ public class GameBoardViewFxml implements ControlledFxView {
 
     private void revealCell(int row, int col, Button btn) {
         int result = gameModel.revealCell(row, col);
+        btn.setDisable(true);
         if (result < 0) {
-            btn.setText("💣");
+            setButtonGraphic(btn, bombImage);
             disableAll();
             gameEventHandler.lose();
         } else {
             if (result > 0) {
-                btn.setText(String.valueOf(result));
+                setButtonGraphic(btn, numberImages.get(result));
             }
-            btn.setDisable(true);
             if (gameModel.isWin()) {
                 disableAll();
                 gameEventHandler.win();
@@ -116,11 +133,19 @@ public class GameBoardViewFxml implements ControlledFxView {
                 int r = GridPane.getRowIndex(other) == null ? 0 : GridPane.getRowIndex(other);
                 int c = GridPane.getColumnIndex(other) == null ? 0 : GridPane.getColumnIndex(other);
                 if (gameModel.hasMineAt(r, c)) {
-                    other.setText("💣");
+                    setButtonGraphic(other, bombImage);
                 }
                 other.setDisable(true);
             }
         }
+    }
+
+    private void setButtonGraphic(Button btn, Image img) {
+        ImageView iv = new ImageView(img);
+        iv.setPreserveRatio(true);
+        iv.setFitWidth(btn.getPrefWidth());
+        iv.setFitHeight(btn.getPrefHeight());
+        btn.setGraphic(iv);
     }
 
     @Override
@@ -132,7 +157,7 @@ public class GameBoardViewFxml implements ControlledFxView {
     public void update() {
         for (Node node : containerPane.getChildren()) {
             if (node instanceof Button btn) {
-                btn.setText("");
+                btn.setGraphic(null);
                 btn.setDisable(false);
             }
         }
