@@ -1,14 +1,16 @@
 package ch.supsi.minesweeper.view;
 
 import ch.supsi.minesweeper.controller.EventHandler;
+import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.model.PlayerEventHandler;
-import ch.supsi.minesweeper.model.AbstractModel;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
@@ -22,8 +24,7 @@ public class GameBoardViewFxml implements ControlledFxView {
     private GameEventHandler   gameEventHandler;
     private GameModel          gameModel;
 
-    @FXML
-    private GridPane containerPane;
+    @FXML private GridPane containerPane;
 
     @FXML private Button cell00, cell01, cell02, cell03, cell04, cell05, cell06, cell07, cell08;
     @FXML private Button cell10, cell11, cell12, cell13, cell14, cell15, cell16, cell17, cell18;
@@ -57,8 +58,8 @@ public class GameBoardViewFxml implements ControlledFxView {
     @Override
     public void initialize(EventHandler eventHandler, AbstractModel model) {
         this.playerEventHandler = (PlayerEventHandler) eventHandler;
-        this.gameEventHandler   = (GameEventHandler)    eventHandler;
-        this.gameModel          = (GameModel)            model;
+        this.gameEventHandler   = (GameEventHandler)   eventHandler;
+        this.gameModel          = (GameModel) model;
         setupGrid();
     }
 
@@ -67,42 +68,54 @@ public class GameBoardViewFxml implements ControlledFxView {
             if (node instanceof Button btn) {
                 int row = GridPane.getRowIndex(btn) == null ? 0 : GridPane.getRowIndex(btn);
                 int col = GridPane.getColumnIndex(btn) == null ? 0 : GridPane.getColumnIndex(btn);
-                btn.setOnAction(evt -> revealCell(row, col, btn));
+                btn.addEventHandler(MouseEvent.MOUSE_CLICKED, evt -> handleClick(evt, row, col, btn));
             }
         }
     }
 
-    private void revealCell(int row, int col, Button btn) {
-        int result;
-        if (gameModel.hasMineAt(row, col)) {
-            result = -1;
-        } else {
-            result = gameModel.getNeighborCountAt(row, col);
+    private void handleClick(MouseEvent evt, int row, int col, Button btn) {
+        if (evt.getButton() == MouseButton.SECONDARY) {
+            // rimuovi bandiera
+            gameModel.toggleFlag(row, col);
+            if (gameModel.isFlagged(row, col)) {
+                btn.setText("🚩");
+            } else {
+                btn.setText("");
+            }
+            evt.consume();
+        } else if (evt.getButton() == MouseButton.PRIMARY) {
+            // non permette di rivelare celle con flag
+            if (!gameModel.isFlagged(row, col)) {
+                revealCell(row, col, btn);
+            }
+            evt.consume();
         }
+    }
+
+    private void revealCell(int row, int col, Button btn) {
+        int result = gameModel.revealCell(row, col);
         if (result < 0) {
             btn.setText("💣");
-        } else if (result > 0) {
-            btn.setText(String.valueOf(result));
-        } else {
-            btn.setText("");
-        }
-        btn.setDisable(true);
-
-        if (result < 0) {
             disableAll();
             gameEventHandler.lose();
-        } else if (gameModel.isWin()) {
-            disableAll();
-            gameEventHandler.win();
+        } else {
+            if (result > 0) {
+                btn.setText(String.valueOf(result));
+            }
+            btn.setDisable(true);
+            if (gameModel.isWin()) {
+                disableAll();
+                gameEventHandler.win();
+            }
         }
     }
 
     private void disableAll() {
         for (Node node : containerPane.getChildren()) {
             if (node instanceof Button other) {
-                int row = GridPane.getRowIndex(other) == null ? 0 : GridPane.getRowIndex(other);
-                int col = GridPane.getColumnIndex(other) == null ? 0 : GridPane.getColumnIndex(other);
-                if (gameModel.hasMineAt(row, col)) {
+                int r = GridPane.getRowIndex(other) == null ? 0 : GridPane.getRowIndex(other);
+                int c = GridPane.getColumnIndex(other) == null ? 0 : GridPane.getColumnIndex(other);
+                if (gameModel.hasMineAt(r, c)) {
                     other.setText("💣");
                 }
                 other.setDisable(true);

@@ -9,11 +9,12 @@ public class GameModel extends AbstractModel
 
     private final int rows  = 9;
     private final int cols  = 9;
-    private int       mines = 10;  // ora variabile
+    private int       mines = 10;
 
     private boolean[][] hasMine;
     private int[][]     neighborCount;
     private boolean[][] revealed;
+    private boolean[][] flagged;
     private int         revealedCount;
 
     private GameModel() {
@@ -28,24 +29,20 @@ public class GameModel extends AbstractModel
         return myself;
     }
 
-    // --- nuovi metodi per interfaccia col controller ---
+    // --- proprietà dinamiche ---
 
-    /** Righe della griglia */
     public int getRows() {
         return rows;
     }
 
-    /** Colonne della griglia */
     public int getCols() {
         return cols;
     }
 
-    /** Numero corrente di mine */
     public int getMines() {
         return mines;
     }
 
-    /** Imposta quante mine piazzare nella prossima newGame() */
     public void setMines(int mines) {
         if (mines < 1 || mines >= rows * cols) {
             throw new IllegalArgumentException("Numero di mine invalido: " + mines);
@@ -53,12 +50,13 @@ public class GameModel extends AbstractModel
         this.mines = mines;
     }
 
-    // --- inizializzazione e generazione campo ---
+    // --- inizializzazione campo ---
 
     private void initField() {
         hasMine       = new boolean[rows][cols];
         neighborCount = new int[rows][cols];
         revealed      = new boolean[rows][cols];
+        flagged       = new boolean[rows][cols];
         revealedCount = 0;
     }
 
@@ -69,12 +67,16 @@ public class GameModel extends AbstractModel
     }
 
     private void generateField() {
-        // reset
-        for (int r = 0; r < rows; r++)
-            for (int c = 0; c < cols; c++)
-                hasMine[r][c] = false;
-
-        // piazza mine
+        // reset di tutte le proprietà
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                hasMine[r][c]       = false;
+                neighborCount[r][c] = 0;
+                revealed[r][c]      = false;
+                flagged[r][c]       = false;
+            }
+        }
+        // piazza le mine
         Random rnd = new Random();
         int placed = 0;
         while (placed < mines) {
@@ -85,8 +87,7 @@ public class GameModel extends AbstractModel
                 placed++;
             }
         }
-
-        // calcola neighborCount
+        // calcola neighbor count
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 if (hasMine[r][c]) continue;
@@ -105,14 +106,32 @@ public class GameModel extends AbstractModel
         }
     }
 
-    // --- rivelazione e vittoria/sconfitta ---
+    // --- rivelazione e flag ---
 
+    /**
+     * Rivela la cella:
+     * @return -1 se mina, altrimenti conteggio mine adiacenti
+     */
     public int revealCell(int r, int c) {
-        if (revealed[r][c]) return neighborCount[r][c];
+        if (revealed[r][c]) {
+            return neighborCount[r][c];
+        }
         revealed[r][c] = true;
-        if (hasMine[r][c]) return -1;
+        if (hasMine[r][c]) {
+            return -1;
+        }
         revealedCount++;
         return neighborCount[r][c];
+    }
+
+    public void toggleFlag(int r, int c) {
+        if (!revealed[r][c]) {
+            flagged[r][c] = !flagged[r][c];
+        }
+    }
+
+    public boolean isFlagged(int r, int c) {
+        return flagged[r][c];
     }
 
     public boolean isWin() {
@@ -127,10 +146,9 @@ public class GameModel extends AbstractModel
         return neighborCount[r][c];
     }
 
-    // --- stub per le interfacce ---
-
-    @Override public void save()   { /* TODO */ }
-    @Override public void move()   { /* gestito da controller */ }
+    // --- stub interfacce ---
+    @Override public void save()   { /* TODO: persistenza */ }
+    @Override public void move()   { /* gestito dal controller */ }
     @Override public void help()   { /* no-op */ }
     @Override public void about()  { /* no-op */ }
     @Override public void win()    { /* no-op */ }
