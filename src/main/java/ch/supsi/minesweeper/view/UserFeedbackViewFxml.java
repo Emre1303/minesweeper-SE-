@@ -10,14 +10,10 @@ import javafx.scene.text.Text;
 
 import java.io.IOException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class UserFeedbackViewFxml implements UncontrolledFxView {
 
     private static UserFeedbackViewFxml myself;
-
     private GameModel gameModel;
 
     @FXML
@@ -31,40 +27,34 @@ public class UserFeedbackViewFxml implements UncontrolledFxView {
     public static UserFeedbackViewFxml getInstance() {
         if (myself == null) {
             myself = new UserFeedbackViewFxml();
-
             try {
                 URL fxmlUrl = UserFeedbackViewFxml.class.getResource("/userfeedbackbar.fxml");
-                if (fxmlUrl != null) {
-                    FXMLLoader fxmlLoader = new FXMLLoader(fxmlUrl);
-                    fxmlLoader.setController(myself);
-                    fxmlLoader.load();
-                }
-
+                FXMLLoader loader = new FXMLLoader(fxmlUrl);
+                loader.setController(myself);
+                loader.load();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Impossibile caricare userfeedbackbar.fxml", e);
             }
         }
-
         return myself;
     }
 
     @Override
     public void initialize(AbstractModel model) {
         this.gameModel = (GameModel) model;
+        update();
     }
 
     @Override
     public Node getNode() {
-        return this.containerPane;
+        return containerPane;
     }
 
     @Override
     public void update() {
-        // get your data from the model, if needed
-        // then update this view here
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        Date date = new Date(System.currentTimeMillis());
-        this.userFeedbackBar.setText(" updated..." + dateFormat.format(date));
+        int totalMines = gameModel.getMines();
+        int flags      = gameModel.getFlaggedCount();
+        int remaining  = totalMines - flags;
+        userFeedbackBar.setText(String.format("Bombs: %d/%d", remaining, totalMines));
     }
-
 }
