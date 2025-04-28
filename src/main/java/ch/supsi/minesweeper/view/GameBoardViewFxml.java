@@ -1,10 +1,10 @@
 package ch.supsi.minesweeper.view;
 
 import ch.supsi.minesweeper.controller.EventHandler;
+import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.model.PlayerEventHandler;
-import ch.supsi.minesweeper.model.AbstractModel;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -23,13 +23,15 @@ import java.util.Map;
 public class GameBoardViewFxml implements ControlledFxView {
 
     private static GameBoardViewFxml myself;
+    //Dimensione Immagini e Blocchi
+    private static final double BUTTON_SIZE = 37;
+    private static final double IMAGE_SIZE  = 37;
 
     private PlayerEventHandler playerEventHandler;
     private GameEventHandler   gameEventHandler;
     private GameModel          gameModel;
 
     @FXML private GridPane containerPane;
-
     @FXML private Button cell00, cell01, cell02, cell03, cell04, cell05, cell06, cell07, cell08;
     @FXML private Button cell10, cell11, cell12, cell13, cell14, cell15, cell16, cell17, cell18;
     @FXML private Button cell20, cell21, cell22, cell23, cell24, cell25, cell26, cell27, cell28;
@@ -41,8 +43,7 @@ public class GameBoardViewFxml implements ControlledFxView {
     @FXML private Button cell80, cell81, cell82, cell83, cell84, cell85, cell86, cell87, cell88;
 
     private final Map<Integer, Image> numberImages = new HashMap<>();
-    private Image flagImage;
-    private Image bombImage;
+    private Image flagImage, bombImage;
 
     private GameBoardViewFxml() {
         loadImages();
@@ -53,11 +54,9 @@ public class GameBoardViewFxml implements ControlledFxView {
             myself = new GameBoardViewFxml();
             try {
                 URL fxmlUrl = GameBoardViewFxml.class.getResource("/gameboard.fxml");
-                if (fxmlUrl != null) {
-                    FXMLLoader loader = new FXMLLoader(fxmlUrl);
-                    loader.setController(myself);
-                    loader.load();
-                }
+                FXMLLoader loader = new FXMLLoader(fxmlUrl);
+                loader.setController(myself);
+                loader.load();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -67,7 +66,8 @@ public class GameBoardViewFxml implements ControlledFxView {
 
     private void loadImages() {
         for (int i = 1; i <= 8; i++) {
-            numberImages.put(i, new Image(getClass().getResourceAsStream("/images/" + i + ".png")));
+            numberImages.put(i,
+                    new Image(getClass().getResourceAsStream("/images/" + i + ".png")));
         }
         flagImage = new Image(getClass().getResourceAsStream("/images/flag.png"));
         bombImage = new Image(getClass().getResourceAsStream("/images/bomb.png"));
@@ -77,14 +77,19 @@ public class GameBoardViewFxml implements ControlledFxView {
     public void initialize(EventHandler eventHandler, AbstractModel model) {
         this.playerEventHandler = (PlayerEventHandler) eventHandler;
         this.gameEventHandler   = (GameEventHandler)   eventHandler;
-        this.gameModel          = (GameModel)           model;
+        this.gameModel          = (GameModel) model;
         setupGrid();
-        update(); // pulisce la griglia
+        update();
     }
 
     private void setupGrid() {
         for (Node node : containerPane.getChildren()) {
             if (node instanceof Button btn) {
+                // Fissa la dimensione del bottone
+                btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+                btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+                btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+
                 int row = GridPane.getRowIndex(btn) == null ? 0 : GridPane.getRowIndex(btn);
                 int col = GridPane.getColumnIndex(btn) == null ? 0 : GridPane.getColumnIndex(btn);
                 btn.addEventHandler(MouseEvent.MOUSE_CLICKED, evt -> handleClick(evt, row, col, btn));
@@ -111,12 +116,12 @@ public class GameBoardViewFxml implements ControlledFxView {
 
     private void revealCell(int row, int col, Button btn) {
         int result = gameModel.revealCell(row, col);
-        btn.setDisable(true);
         if (result < 0) {
             setButtonGraphic(btn, bombImage);
             disableAll();
             gameEventHandler.lose();
         } else {
+            btn.setDisable(true);
             if (result > 0) {
                 setButtonGraphic(btn, numberImages.get(result));
             }
@@ -127,25 +132,25 @@ public class GameBoardViewFxml implements ControlledFxView {
         }
     }
 
+    private void setButtonGraphic(Button btn, Image img) {
+        ImageView iv = new ImageView(img);
+        iv.setPreserveRatio(true);
+        iv.setFitWidth(IMAGE_SIZE);
+        iv.setFitHeight(IMAGE_SIZE);
+        btn.setGraphic(iv);
+    }
+
     private void disableAll() {
         for (Node node : containerPane.getChildren()) {
             if (node instanceof Button other) {
-                int r = GridPane.getRowIndex(other) == null ? 0 : GridPane.getRowIndex(other);
-                int c = GridPane.getColumnIndex(other) == null ? 0 : GridPane.getColumnIndex(other);
+                int r = GridPane.getRowIndex(other)==null?0:GridPane.getRowIndex(other);
+                int c = GridPane.getColumnIndex(other)==null?0:GridPane.getColumnIndex(other);
                 if (gameModel.hasMineAt(r, c)) {
                     setButtonGraphic(other, bombImage);
                 }
                 other.setDisable(true);
             }
         }
-    }
-
-    private void setButtonGraphic(Button btn, Image img) {
-        ImageView iv = new ImageView(img);
-        iv.setPreserveRatio(true);
-        iv.setFitWidth(btn.getPrefWidth());
-        iv.setFitHeight(btn.getPrefHeight());
-        btn.setGraphic(iv);
     }
 
     @Override
