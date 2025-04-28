@@ -8,7 +8,9 @@ import ch.supsi.minesweeper.model.PlayerEventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -20,12 +22,16 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * View della griglia di gioco con gestione di reveal e flag,
+ * limitando il numero di bandiere al numero di mine totali.
+ */
 public class GameBoardViewFxml implements ControlledFxView {
 
     private static GameBoardViewFxml myself;
-    //Dimensione Immagini e Blocchi
+
     private static final double BUTTON_SIZE = 37;
-    private static final double IMAGE_SIZE  = 37;
+    private static final double IMAGE_SIZE  = 30;
 
     private PlayerEventHandler playerEventHandler;
     private GameEventHandler   gameEventHandler;
@@ -58,12 +64,13 @@ public class GameBoardViewFxml implements ControlledFxView {
                 loader.setController(myself);
                 loader.load();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Errore caricamento gameboard.fxml", e);
             }
         }
         return myself;
     }
 
+    /** Carica le immagini da resources/images */
     private void loadImages() {
         for (int i = 1; i <= 8; i++) {
             numberImages.put(i,
@@ -82,30 +89,44 @@ public class GameBoardViewFxml implements ControlledFxView {
         update();
     }
 
+    /** Imposta dimensioni e click handler su tutte le celle */
     private void setupGrid() {
         for (Node node : containerPane.getChildren()) {
             if (node instanceof Button btn) {
-                // Fissa la dimensione del bottone
                 btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
                 btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
                 btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
 
                 int row = GridPane.getRowIndex(btn) == null ? 0 : GridPane.getRowIndex(btn);
                 int col = GridPane.getColumnIndex(btn) == null ? 0 : GridPane.getColumnIndex(btn);
-                btn.addEventHandler(MouseEvent.MOUSE_CLICKED, evt -> handleClick(evt, row, col, btn));
+                btn.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                        evt -> handleClick(evt, row, col, btn));
             }
         }
     }
 
     private void handleClick(MouseEvent evt, int row, int col, Button btn) {
         if (evt.getButton() == MouseButton.SECONDARY) {
+            // se vogliamo aggiungere una flag ma il limite è raggiunto, mostriamo un alert
+            if (!gameModel.isFlagged(row, col)
+                    && gameModel.getFlaggedCount() >= gameModel.getMines()) {
+                Alert alert = new Alert(AlertType.WARNING);
+                alert.setTitle("No more flags");
+                alert.setHeaderText(null);
+                alert.setContentText("Hai già posizionato tutte le bandiere.");
+                alert.showAndWait();
+                return;
+            }
             gameModel.toggleFlag(row, col);
             if (gameModel.isFlagged(row, col)) {
                 setButtonGraphic(btn, flagImage);
             } else {
                 btn.setGraphic(null);
             }
+            // aggiorna feedback barra
+            UserFeedbackViewFxml.getInstance().update();
             evt.consume();
+
         } else if (evt.getButton() == MouseButton.PRIMARY) {
             if (!gameModel.isFlagged(row, col)) {
                 revealCell(row, col, btn);
@@ -158,6 +179,7 @@ public class GameBoardViewFxml implements ControlledFxView {
         return containerPane;
     }
 
+    /** Reset griglia a stato iniziale */
     @Override
     public void update() {
         for (Node node : containerPane.getChildren()) {
