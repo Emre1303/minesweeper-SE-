@@ -4,15 +4,12 @@ import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.model.PlayerEventHandler;
 import ch.supsi.minesweeper.view.DataView;
+import ch.supsi.minesweeper.util.AppPreferences;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ChoiceDialog;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class GameController implements GameEventHandler, PlayerEventHandler {
 
@@ -31,35 +28,33 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
         return myself;
     }
 
-    /** Registra le view all’avvio */
+
     public void initialize(List<DataView> views) {
         this.views = views;
     }
 
-    /** Nuova partita con scelta dinamica del numero di mine */
+
     @Override
     public void newGame() {
         Platform.runLater(() -> {
 
-            List<Integer> options = IntStream
-                    .rangeClosed(1, gameModel.getRows() * gameModel.getCols() - 1)
-                    .boxed()
-                    .collect(Collectors.toList());
+            /* numero mine di default da config.properties */
+            int bombsPref = AppPreferences.getBombs();
 
-            ChoiceDialog<Integer> dialog = new ChoiceDialog<>(
-                    gameModel.getMines(), options);
-            dialog.setTitle("Nuova Partita");
-            dialog.setHeaderText("Imposta numero di mine");
-            dialog.setContentText(
-                    String.format("Seleziona quante mine (1–%d):", options.get(options.size() - 1))
-            );
+            int max = gameModel.getRows() * gameModel.getCols() - 1;
+            int bombs = Math.max(1, Math.min(bombsPref, max));   // clamp di sicurezza
 
-            Optional<Integer> result = dialog.showAndWait();
-            result.ifPresent(count -> {
-                gameModel.setMines(count);
-                gameModel.newGame();
-                views.forEach(DataView::update);
-            });
+            gameModel.setMines(bombs);
+            gameModel.newGame();
+
+            views.forEach(DataView::update);
+
+            /* messaggio che informa il giocatore (requisito #2) */
+            Alert info = new Alert(AlertType.INFORMATION);
+            info.setTitle("Nuova partita");
+            info.setHeaderText(null);
+            info.setContentText("Sono state nascoste " + bombs + " mine.");
+            info.showAndWait();
         });
     }
 
@@ -76,9 +71,9 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
             alert.setTitle("Help");
             alert.setHeaderText("How to play");
             alert.setContentText(
-                    "• Left-click to reveal a cell\n" +
-                            "• Right-click to flag/unflag\n" +
-                            "• Reveal all safe cells to win."
+                    "• Left-click to reveal a cell\n"
+                            + "• Right-click to flag / unflag\n"
+                            + "• Reveal all safe cells to win."
             );
             alert.showAndWait();
         });

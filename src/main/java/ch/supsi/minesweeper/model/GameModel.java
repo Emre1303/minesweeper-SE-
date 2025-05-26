@@ -29,22 +29,20 @@ public class GameModel extends AbstractModel
         return myself;
     }
 
-    /** Restituisce il numero di righe */
     public int getRows() {
         return rows;
     }
 
-    /** Restituisce il numero di colonne */
+
     public int getCols() {
         return cols;
     }
 
-    /** Restituisce il numero di mine impostato */
+
     public int getMines() {
         return mines;
     }
 
-    /** Imposta il numero di mine per la prossima partita */
     public void setMines(int mines) {
         if (mines < 1 || mines >= rows * cols) {
             throw new IllegalArgumentException("Numero di mine invalido: " + mines);
@@ -52,7 +50,6 @@ public class GameModel extends AbstractModel
         this.mines = mines;
     }
 
-    /** Conta quante bandiere sono state piazzate */
     public int getFlaggedCount() {
         int count = 0;
         for (int r = 0; r < rows; r++) {
@@ -63,7 +60,6 @@ public class GameModel extends AbstractModel
         return count;
     }
 
-    /** Inizializza tutte le strutture dati per una nuova partita */
     private void initField() {
         hasMine       = new boolean[rows][cols];
         neighborCount = new int[rows][cols];
@@ -78,7 +74,6 @@ public class GameModel extends AbstractModel
         generateField();
     }
 
-    /** Genera il campo: piazza random mine e calcola i contatori */
     private void generateField() {
         // reset
         for (int r = 0; r < rows; r++) {
@@ -119,7 +114,7 @@ public class GameModel extends AbstractModel
         }
     }
 
-    /** Rivela una cella: ritorna -1 se mina, altrimenti numero di mine adiacenti */
+
     public int revealCell(int r, int c) {
         if (revealed[r][c]) {
             return neighborCount[r][c];
@@ -132,7 +127,6 @@ public class GameModel extends AbstractModel
         return neighborCount[r][c];
     }
 
-    /** Toggle bandiera sulla cella, se non rivelata */
     public void toggleFlag(int r, int c) {
         if (!revealed[r][c]) {
             flagged[r][c] = !flagged[r][c];
@@ -143,7 +137,7 @@ public class GameModel extends AbstractModel
         return flagged[r][c];
     }
 
-    /** True se tutte le celle non mina sono rivelate */
+
     public boolean isWin() {
         return revealedCount == (rows * cols - mines);
     }
@@ -152,11 +146,11 @@ public class GameModel extends AbstractModel
         return hasMine[r][c];
     }
 
-    public int getNeighborCountAt(int r, int c) {
-        return neighborCount[r][c];
-    }
+    //public int getNeighborCountAt(int r, int c) {
+      //  return neighborCount[r][c];
+   // }
 
-    // -- stub interfacce --
+
     @Override public void save()   { }
     @Override public void move()   { }
     @Override public void help()   { }
