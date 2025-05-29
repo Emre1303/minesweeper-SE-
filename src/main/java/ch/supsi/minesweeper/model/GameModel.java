@@ -16,6 +16,11 @@ public class GameModel extends AbstractModel
     private boolean[][] revealed;
     private boolean[][] flagged;
     private int         revealedCount;
+    private boolean started = false;
+
+    public boolean isStarted() {
+        return started;
+    }
 
     private GameModel() {
         super();
@@ -72,6 +77,10 @@ public class GameModel extends AbstractModel
     public void newGame() {
         initField();
         generateField();
+        started = true;
+    }
+    public void reset(){
+        started = false;
     }
 
     private void generateField() {

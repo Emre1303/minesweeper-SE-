@@ -104,6 +104,8 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
     @Override
     public void lose() {
         Platform.runLater(() -> {
+            gameModel.reset();                    // 🔸 disattiva la partita
+            views.forEach(DataView::update);      // 🔸 aggiorna le view (ora si bloccano)
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Game Over");
             alert.setHeaderText("Boom! You hit a mine.");

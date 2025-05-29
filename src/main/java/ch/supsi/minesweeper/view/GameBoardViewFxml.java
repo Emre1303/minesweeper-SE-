@@ -89,13 +89,17 @@ public class GameBoardViewFxml implements ControlledFxView {
         update();
     }
 
-    /** Imposta dimensioni e click handler su tutte le celle */
+    /** Imposta dimensioni e click-handler su tutte le celle.
+     *  Le disabilitiamo finché la partita non è avviata. */
     private void setupGrid() {
         for (Node node : containerPane.getChildren()) {
             if (node instanceof Button btn) {
                 btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
                 btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
                 btn.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+
+                // 🔸 blocca il bottone all’avvio
+                btn.setDisable(true);
 
                 int row = GridPane.getRowIndex(btn) == null ? 0 : GridPane.getRowIndex(btn);
                 int col = GridPane.getColumnIndex(btn) == null ? 0 : GridPane.getColumnIndex(btn);
@@ -106,24 +110,20 @@ public class GameBoardViewFxml implements ControlledFxView {
     }
 
     private void handleClick(MouseEvent evt, int row, int col, Button btn) {
+
+        /* 🔸 ignora ogni click se la partita non è avviata */
+        if (!gameModel.isStarted()) return;
+
         if (evt.getButton() == MouseButton.SECONDARY) {
-            // se vogliamo aggiungere una flag ma il limite è raggiunto, mostriamo un alert
-            if (!gameModel.isFlagged(row, col)
-                    && gameModel.getFlaggedCount() >= gameModel.getMines()) {
-                Alert alert = new Alert(AlertType.WARNING);
-                alert.setTitle("No more flags");
-                alert.setHeaderText(null);
-                alert.setContentText("Hai già posizionato tutte le bandiere.");
-                alert.showAndWait();
-                return;
-            }
+
+            /* 🔸 rimosso il blocco che impediva di superare il numero di mine */
+
             gameModel.toggleFlag(row, col);
             if (gameModel.isFlagged(row, col)) {
                 setButtonGraphic(btn, flagImage);
             } else {
                 btn.setGraphic(null);
             }
-            // aggiorna feedback barra
             UserFeedbackViewFxml.getInstance().update();
             evt.consume();
 
@@ -182,10 +182,17 @@ public class GameBoardViewFxml implements ControlledFxView {
     /** Reset griglia a stato iniziale */
     @Override
     public void update() {
+        boolean active = gameModel.isStarted();        // 🔸
+
         for (Node node : containerPane.getChildren()) {
             if (node instanceof Button btn) {
-                btn.setGraphic(null);
-                btn.setDisable(false);
+
+                // reset grafica solo se la partita NON è attiva (nuovo avvio)
+                if (!active) {
+                    btn.setGraphic(null);
+                }
+
+                btn.setDisable(!active);               // 🔸 blocca / sblocca
             }
         }
     }
