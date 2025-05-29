@@ -8,115 +8,103 @@ import ch.supsi.minesweeper.util.AppPreferences;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class GameController implements GameEventHandler, PlayerEventHandler {
 
     private static GameController myself;
     private final GameModel gameModel;
     private List<DataView> views;
-
-    private GameController() {
-        this.gameModel = GameModel.getInstance();
-    }
-
+    private GameController() { gameModel = GameModel.getInstance(); }
     public static GameController getInstance() {
-        if (myself == null) {
-            myself = new GameController();
-        }
+        if (myself == null) myself = new GameController();
         return myself;
     }
 
+    public void initialize(List<DataView> views) { this.views = views; }
 
-    public void initialize(List<DataView> views) {
-        this.views = views;
+    private ResourceBundle rb() {
+        return ResourceBundle.getBundle(
+                "i18n.messages",
+                Locale.forLanguageTag(AppPreferences.getLang()));
     }
-
 
     @Override
     public void newGame() {
         Platform.runLater(() -> {
-
-            /* numero mine di default da config.properties */
-            int bombsPref = AppPreferences.getBombs();
-
-            int max = gameModel.getRows() * gameModel.getCols() - 1;
-            int bombs = Math.max(1, Math.min(bombsPref, max));   // clamp di sicurezza
+            int pref = AppPreferences.getBombs();
+            int max  = gameModel.getRows()*gameModel.getCols() - 1;
+            int bombs = Math.max(1, Math.min(pref, max));
 
             gameModel.setMines(bombs);
             gameModel.newGame();
-
             views.forEach(DataView::update);
 
-            /* messaggio che informa il giocatore (requisito #2) */
+            ResourceBundle rb = rb();
             Alert info = new Alert(AlertType.INFORMATION);
-            info.setTitle("Nuova partita");
+            info.setTitle(rb.getString("dialog.new.title"));
             info.setHeaderText(null);
-            info.setContentText("Sono state nascoste " + bombs + " mine.");
+            info.setContentText(
+                    MessageFormat.format(rb.getString("dialog.new.body"), bombs));
             info.showAndWait();
         });
     }
 
-    @Override
-    public void save() {
-        gameModel.save();
-        views.forEach(DataView::update);
-    }
+    @Override public void save() { gameModel.save(); views.forEach(DataView::update); }
 
     @Override
     public void help() {
         Platform.runLater(() -> {
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Help");
-            alert.setHeaderText("How to play");
-            alert.setContentText(
-                    "• Left-click to reveal a cell\n"
-                            + "• Right-click to flag / unflag\n"
-                            + "• Reveal all safe cells to win."
-            );
-            alert.showAndWait();
+            ResourceBundle rb = rb();
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setTitle(rb.getString("help.title"));
+            a.setHeaderText(rb.getString("help.header"));
+            a.setContentText(rb.getString("help.content"));
+            a.showAndWait();
         });
     }
-
     @Override
     public void about() {
         Platform.runLater(() -> {
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("About");
-            alert.setHeaderText("Minesweeper JavaFX");
-            alert.setContentText("© 2025 SUPSI – Memet Emre Yildirim, Niccolò Xhyra");
-            alert.showAndWait();
+            ResourceBundle rb = rb();
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setTitle(rb.getString("about.title"));
+            a.setHeaderText(rb.getString("about.header"));
+            a.setContentText(rb.getString("about.content"));
+            a.showAndWait();
         });
     }
 
     @Override
     public void win() {
         Platform.runLater(() -> {
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("You Win!");
-            alert.setHeaderText(null);
-            alert.setContentText("Congratulations, you cleared the minefield!");
-            alert.showAndWait();
+            ResourceBundle rb = rb();
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setTitle(rb.getString("alert.win.title"));
+            a.setHeaderText(null);
+            a.setContentText(rb.getString("alert.win.text"));
+            a.showAndWait();
         });
     }
 
     @Override
     public void lose() {
         Platform.runLater(() -> {
-            gameModel.reset();
-            views.forEach(DataView::update);
+            ResourceBundle rb = ResourceBundle.getBundle(
+                    "i18n.messages",
+                    Locale.forLanguageTag(AppPreferences.getLang()));
+
             Alert alert = new Alert(AlertType.ERROR);
-            alert.setTitle("Game Over");
-            alert.setHeaderText("Boom! You hit a mine.");
-            alert.setContentText("Try again with File → New.");
+            alert.setTitle(rb.getString("alert.lose.title"));
+            alert.setHeaderText(rb.getString("alert.lose.header"));
+            alert.setContentText(rb.getString("alert.lose.text"));
             alert.showAndWait();
         });
     }
 
     @Override
-    public void move() {
-        gameModel.move();
-        views.forEach(DataView::update);
-    }
+    public void move() { gameModel.move(); views.forEach(DataView::update); }
 }

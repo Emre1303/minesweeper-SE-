@@ -13,112 +13,115 @@ import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class MenuBarViewFxml implements ControlledFxView {
 
+    private final ResourceBundle bundle;
     private static MenuBarViewFxml myself;
     private GameEventHandler gameEventHandler;
     private GameModel        gameModel;
     @FXML private MenuBar  menuBar;
     @FXML private MenuItem newMenuItem;
     @FXML private MenuItem saveMenuItem;
-    @FXML private MenuItem quitMenuItem;          // se lo usi altrove
-    @FXML private MenuItem preferencesMenuItem;   // <— handler aggiunto
+    @FXML private MenuItem quitMenuItem;
+    @FXML private MenuItem preferencesMenuItem;
     @FXML private MenuItem helpMenuItem;
     @FXML private MenuItem aboutMenuItem;
 
-    private MenuBarViewFxml() { }
+    private MenuBarViewFxml(ResourceBundle bundle) { this.bundle = bundle; }
 
-    public static MenuBarViewFxml getInstance() {
+    public static MenuBarViewFxml getInstance(ResourceBundle bundle) {
         if (myself == null) {
-            myself = new MenuBarViewFxml();
-            try {
-                URL fxmlUrl = MenuBarViewFxml.class.getResource("/menubar.fxml");
-                FXMLLoader loader = new FXMLLoader(fxmlUrl);
-                loader.setController(myself);
-                loader.load();
-            } catch (IOException e) {
-                throw new RuntimeException("Errore caricamento menubar.fxml", e);
-            }
+            myself = new MenuBarViewFxml(bundle);
+            loadFxml(bundle);
         }
         return myself;
     }
 
+
+    public static MenuBarViewFxml getInstance() {
+        ResourceBundle def = ResourceBundle.getBundle(
+                "i18n.messages",
+                Locale.forLanguageTag(AppPreferences.getLang()));
+        return getInstance(def);
+    }
+
+
+    private static void loadFxml(ResourceBundle bundle) {
+        try {
+            URL url = MenuBarViewFxml.class.getResource("/menubar.fxml");
+            FXMLLoader loader = new FXMLLoader(url, bundle);
+            loader.setController(myself);
+            loader.load();
+        } catch (IOException ex) {
+            throw new RuntimeException("Errore caricamento menubar.fxml", ex);
+        }
+    }
+
     @Override
-    public void initialize(EventHandler eventHandler, AbstractModel model) {
-        this.gameEventHandler = (GameEventHandler) eventHandler;
-        this.gameModel        = (GameModel) model;
+    public void initialize(EventHandler h, AbstractModel m) {
+        gameEventHandler = (GameEventHandler) h;
+        gameModel        = (GameModel) m;
         createBehaviour();
     }
-
     @Override public Node getNode() { return menuBar; }
+    @Override public void update()  {}
 
-    @Override public void update() {
-    }
+
     private void createBehaviour() {
-
         newMenuItem.setOnAction(e -> gameEventHandler.newGame());
         saveMenuItem.setOnAction(e -> gameEventHandler.save());
         helpMenuItem.setOnAction(e -> gameEventHandler.help());
         aboutMenuItem.setOnAction(e -> gameEventHandler.about());
-
-        /* ---------- Preferences…  ------------------------------------ */
         preferencesMenuItem.setOnAction(e -> showPreferencesDialog());
     }
 
-
     private void showPreferencesDialog() {
 
-        int currentBombs = AppPreferences.getBombs();
-        String currentLang = AppPreferences.getLang();
-
-        int maxBombs = gameModel.getRows() * gameModel.getCols() - 1;
+        int    currentBombs = AppPreferences.getBombs();
+        String currentLang  = AppPreferences.getLang();
+        int maxBombs = gameModel.getRows()*gameModel.getCols() - 1;
 
         Dialog<ButtonType> dlg = new Dialog<>();
-        dlg.setTitle("Preferences");
-        dlg.setHeaderText("Modifica preferenze (si applicano al riavvio)");
+        dlg.setTitle(bundle.getString("menu.preferences"));
+        dlg.setHeaderText(bundle.getString("prefs.header"));
 
-        GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(10);
+        GridPane grid = new GridPane(); grid.setHgap(10); grid.setVgap(10);
 
         TextField bombsField = new TextField(String.valueOf(currentBombs));
-        bombsField.setPrefColumnCount(5);
-
         ComboBox<String> langBox = new ComboBox<>();
         langBox.getItems().addAll("en", "it");
         langBox.setValue(currentLang);
 
-        grid.addRow(0, new Label("Numero mine di default:"), bombsField);
-        grid.addRow(1, new Label("Lingua:"), langBox);
+        grid.addRow(0,
+                new Label(bundle.getString("prefs.bombs.label")), bombsField);
+        grid.addRow(1,
+                new Label(bundle.getString("prefs.lang.label")),  langBox);
 
         dlg.getDialogPane().setContent(grid);
         dlg.getDialogPane().getButtonTypes()
                 .addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        dlg.showAndWait()
-                .filter(bt -> bt == ButtonType.OK)
-                .ifPresent(bt -> {
-                    try {
-                        int bombs = Integer.parseInt(bombsField.getText().trim());
-                        if (bombs < 1 || bombs > maxBombs) {
-                            throw new NumberFormatException();
-                        }
+        dlg.showAndWait().filter(bt -> bt == ButtonType.OK).ifPresent(bt -> {
+            try {
+                int bombs = Integer.parseInt(bombsField.getText().trim());
+                if (bombs < 1 || bombs > maxBombs) throw new NumberFormatException();
 
-                        AppPreferences.setBombs(bombs);
-                        AppPreferences.setLang(langBox.getValue());
-                        AppPreferences.save();
+                AppPreferences.setBombs(bombs);
+                AppPreferences.setLang(langBox.getValue());
+                AppPreferences.save();
 
-                        new Alert(Alert.AlertType.INFORMATION,
-                                "Preferenze salvate.\n" +
-                                        "Riavvia l’applicazione e avvia una nuova partita\n" +
-                                        "per applicare i cambiamenti.")
-                                .showAndWait();
+                new Alert(Alert.AlertType.INFORMATION,
+                        bundle.getString("prefs.saved"))
+                        .showAndWait();
 
-                    } catch (NumberFormatException ex) {
-                        new Alert(Alert.AlertType.ERROR,
-                                "Il numero di mine deve essere fra 1 e " + maxBombs + ".")
-                                .showAndWait();
-                    }
-                });
+            } catch (NumberFormatException ex) {
+                new Alert(Alert.AlertType.ERROR,
+                        bundle.getString("prefs.error") + " 1–" + maxBombs + ".")
+                        .showAndWait();
+            }
+        });
     }
 }

@@ -3,58 +3,52 @@ package ch.supsi.minesweeper;
 import ch.supsi.minesweeper.controller.GameController;
 import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameModel;
-import ch.supsi.minesweeper.view.ControlledFxView;
-import ch.supsi.minesweeper.view.GameBoardViewFxml;
-import ch.supsi.minesweeper.view.MenuBarViewFxml;
-import ch.supsi.minesweeper.view.UncontrolledFxView;
-import ch.supsi.minesweeper.view.UserFeedbackViewFxml;
+import ch.supsi.minesweeper.util.AppPreferences;
+import ch.supsi.minesweeper.view.*;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class MainFx extends Application {
 
-    public static final String APP_TITLE = "mine sweeper";
+    public static final String BUNDLE_BASE = "i18n.messages";
 
-    private final AbstractModel          model;
-    private final ControlledFxView       menuBarView;
-    private final ControlledFxView       gameBoardView;
-    private final UncontrolledFxView     feedbackView;
+    private final AbstractModel    model;
+    private final ControlledFxView menuBarView;
+    private final ControlledFxView gameBoardView;
+    private final UncontrolledFxView feedbackView;
+
+    private final ResourceBundle bundle;          // 🔸 nuovo
 
     public MainFx() {
-        this.model = GameModel.getInstance();
 
-        // viste
-        this.menuBarView     = MenuBarViewFxml.getInstance();
-        this.gameBoardView   = GameBoardViewFxml.getInstance();
-        this.feedbackView    = UserFeedbackViewFxml.getInstance();
+        /* ---- lingua scelta in config.properties ---------------------- */
+        Locale locale = Locale.forLanguageTag(AppPreferences.getLang());
+        bundle = ResourceBundle.getBundle(BUNDLE_BASE, locale);
 
-        // inizializzazione MVC
-        // il controller gestisce eventi di gioco e movimento di player
+        /* ---- MVC ------------------------------------------------------ */
+        model          = GameModel.getInstance();
+
+        menuBarView    = MenuBarViewFxml.getInstance(bundle);
+        gameBoardView  = GameBoardViewFxml.getInstance(bundle);
+        feedbackView   = UserFeedbackViewFxml.getInstance(bundle);
+
         GameController controller = GameController.getInstance();
 
         menuBarView.initialize(controller, model);
         gameBoardView.initialize(controller, model);
         feedbackView.initialize(model);
 
-        // registra tutte le view per aggiornamenti
-        controller.initialize(List.of(
-                menuBarView,
-                gameBoardView,
-                // anche la feedback view implementa DataView e riceverà update()
-                feedbackView
-        ));
+        controller.initialize(List.of(menuBarView, gameBoardView, feedbackView));
     }
 
     @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setOnCloseRequest(ev -> {
-            ev.consume();
-            primaryStage.close();
-        });
+    public void start(Stage stage) {
 
         BorderPane root = new BorderPane();
         root.setTop   (menuBarView.getNode());
@@ -62,13 +56,11 @@ public class MainFx extends Application {
         root.setBottom(feedbackView.getNode());
 
         Scene scene = new Scene(root);
-        primaryStage.setTitle(APP_TITLE);
-        primaryStage.setResizable(false);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        stage.setTitle(bundle.getString("app.title"));     // 🔸 titolo tradotto
+        stage.setResizable(false);
+        stage.setScene(scene);
+        stage.show();
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+    public static void main(String[] args) { launch(args); }
 }
