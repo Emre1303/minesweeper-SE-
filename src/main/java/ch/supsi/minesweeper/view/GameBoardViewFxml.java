@@ -179,10 +179,10 @@ public class GameBoardViewFxml implements ControlledFxView {
         return containerPane;
     }
 
-    /** Reset griglia a stato iniziale */
+
     @Override
     public void update() {
-        boolean active = gameModel.isStarted();        // 🔸
+        boolean active = gameModel.isStarted();
 
         for (Node node : containerPane.getChildren()) {
             if (node instanceof Button btn) {
@@ -192,7 +192,7 @@ public class GameBoardViewFxml implements ControlledFxView {
                     btn.setGraphic(null);
                 }
 
-                btn.setDisable(!active);               // 🔸 blocca / sblocca
+                btn.setDisable(!active);
             }
         }
     }
