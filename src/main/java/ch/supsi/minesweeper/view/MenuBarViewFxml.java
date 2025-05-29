@@ -5,11 +5,13 @@ import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.util.AppPreferences;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.control.ButtonType;
 
 import java.io.IOException;
 import java.net.URL;
@@ -71,13 +73,25 @@ public class MenuBarViewFxml implements ControlledFxView {
 
 
     private void createBehaviour() {
+
         newMenuItem.setOnAction(e -> gameEventHandler.newGame());
         saveMenuItem.setOnAction(e -> gameEventHandler.save());
         helpMenuItem.setOnAction(e -> gameEventHandler.help());
         aboutMenuItem.setOnAction(e -> gameEventHandler.about());
         preferencesMenuItem.setOnAction(e -> showPreferencesDialog());
-    }
 
+        quitMenuItem.setOnAction(e -> {
+            ResourceBundle rb = bundle;
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                    rb.getString("quit.ask"));
+            confirm.setHeaderText(null);
+            confirm.setTitle(rb.getString("quit.title"));
+            confirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+
+            confirm.showAndWait().filter(bt -> bt == ButtonType.YES)
+                    .ifPresent(bt -> Platform.exit());
+        });
+    }
     private void showPreferencesDialog() {
 
         int    currentBombs = AppPreferences.getBombs();
