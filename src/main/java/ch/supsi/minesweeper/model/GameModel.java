@@ -155,9 +155,6 @@ public class GameModel extends AbstractModel
         return hasMine[r][c];
     }
 
-    //public int getNeighborCountAt(int r, int c) {
-      //  return neighborCount[r][c];
-   // }
 
 
     @Override public void save()   { }

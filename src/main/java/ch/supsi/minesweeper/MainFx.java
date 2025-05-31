@@ -18,20 +18,19 @@ public class MainFx extends Application {
 
     public static final String BUNDLE_BASE = "i18n.messages";
 
-    private final AbstractModel    model;
+    private final AbstractModel model;
     private final ControlledFxView menuBarView;
     private final ControlledFxView gameBoardView;
     private final UncontrolledFxView feedbackView;
 
-    private final ResourceBundle bundle;          // 🔸 nuovo
+    private final ResourceBundle bundle;
 
     public MainFx() {
 
-        /* ---- lingua scelta in config.properties ---------------------- */
+
         Locale locale = Locale.forLanguageTag(AppPreferences.getLang());
         bundle = ResourceBundle.getBundle(BUNDLE_BASE, locale);
 
-        /* ---- MVC ------------------------------------------------------ */
         model          = GameModel.getInstance();
 
         menuBarView    = MenuBarViewFxml.getInstance(bundle);
@@ -56,7 +55,7 @@ public class MainFx extends Application {
         root.setBottom(feedbackView.getNode());
 
         Scene scene = new Scene(root);
-        stage.setTitle(bundle.getString("app.title"));     // 🔸 titolo tradotto
+        stage.setTitle(bundle.getString("app.title"));
         stage.setResizable(false);
         stage.setScene(scene);
         stage.show();

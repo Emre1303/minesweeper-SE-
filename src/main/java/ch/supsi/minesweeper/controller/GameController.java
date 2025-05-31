@@ -17,8 +17,14 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
 
     private static GameController myself;
     private final GameModel gameModel;
-    private List<DataView> views;
-    private GameController() { gameModel = GameModel.getInstance(); }
+    private List<DataView>  views;
+    private final int defaultBombs;
+
+    private GameController() {
+        gameModel    = GameModel.getInstance();
+        defaultBombs = AppPreferences.getBombs();
+    }
+
     public static GameController getInstance() {
         if (myself == null) myself = new GameController();
         return myself;
@@ -35,9 +41,8 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
     @Override
     public void newGame() {
         Platform.runLater(() -> {
-            int pref = AppPreferences.getBombs();
-            int max  = gameModel.getRows()*gameModel.getCols() - 1;
-            int bombs = Math.max(1, Math.min(pref, max));
+            int max = gameModel.getRows() * gameModel.getCols() - 1;
+            int bombs = Math.max(1, Math.min(defaultBombs, max));   // clamp
 
             gameModel.setMines(bombs);
             gameModel.newGame();
@@ -93,15 +98,12 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
     @Override
     public void lose() {
         Platform.runLater(() -> {
-            ResourceBundle rb = ResourceBundle.getBundle(
-                    "i18n.messages",
-                    Locale.forLanguageTag(AppPreferences.getLang()));
-
-            Alert alert = new Alert(AlertType.ERROR);
-            alert.setTitle(rb.getString("alert.lose.title"));
-            alert.setHeaderText(rb.getString("alert.lose.header"));
-            alert.setContentText(rb.getString("alert.lose.text"));
-            alert.showAndWait();
+            ResourceBundle rb = rb();
+            Alert a = new Alert(AlertType.ERROR);
+            a.setTitle(rb.getString("alert.lose.title"));
+            a.setHeaderText(rb.getString("alert.lose.header"));
+            a.setContentText(rb.getString("alert.lose.text"));
+            a.showAndWait();
         });
     }
 
