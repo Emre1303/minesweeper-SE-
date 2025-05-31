@@ -1,6 +1,8 @@
 package ch.supsi.minesweeper;
 
+import ch.supsi.minesweeper.controller.EventHandler;
 import ch.supsi.minesweeper.controller.GameController;
+
 import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.util.AppPreferences;
@@ -39,8 +41,8 @@ public class MainFx extends Application {
 
         GameController controller = GameController.getInstance();
 
-        menuBarView.initialize(controller, model);
-        gameBoardView.initialize(controller, model);
+        menuBarView.initialize((EventHandler) controller, model);
+        gameBoardView.initialize((EventHandler) controller, model);
         feedbackView.initialize(model);
 
         controller.initialize(List.of(menuBarView, gameBoardView, feedbackView));
