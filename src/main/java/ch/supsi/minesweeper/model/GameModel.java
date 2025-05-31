@@ -1,6 +1,10 @@
 package ch.supsi.minesweeper.model;
 
 import java.util.Random;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 
 public class GameModel extends AbstractModel
         implements GameEventHandler, PlayerEventHandler {
@@ -10,7 +14,6 @@ public class GameModel extends AbstractModel
     private final int rows  = 9;
     private final int cols  = 9;
     private int       mines = 10;
-
     private boolean[][] hasMine;
     private int[][]     neighborCount;
     private boolean[][] revealed;
@@ -18,6 +21,42 @@ public class GameModel extends AbstractModel
     private int         revealedCount;
     private boolean started = false;
 
+    public int getNeighborCountAt(int r, int c) {
+        return neighborCount[r][c];
+    }
+
+    public List<int[]> revealArea(int r, int c) {
+
+        List<int[]> opened = new ArrayList<>();
+        if (revealed[r][c] || flagged[r][c]) return opened;
+
+        Queue<int[]> q = new ArrayDeque<>();
+        q.add(new int[]{r,c});
+        revealed[r][c] = true;
+
+        while (!q.isEmpty()) {
+            int[] pos = q.poll();
+            int row = pos[0], col = pos[1];
+            opened.add(pos);
+
+            if (hasMine[row][col]) continue;
+            if (neighborCount[row][col] != 0) continue;
+
+            for (int dr=-1; dr<=1; dr++)
+                for (int dc=-1; dc<=1; dc++) {
+                    if (dr==0 && dc==0) continue;
+                    int nr=row+dr, nc=col+dc;
+                    if (nr<0||nr>=rows||nc<0||nc>=cols) continue;
+                    if (!revealed[nr][nc] && !flagged[nr][nc]) {
+                        revealed[nr][nc] = true;
+                        q.add(new int[]{nr,nc});
+                    }
+                }
+        }
+
+        revealedCount += opened.size();
+        return opened;
+    }
     public boolean isStarted() {
         return started;
     }

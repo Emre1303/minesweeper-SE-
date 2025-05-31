@@ -99,5 +99,5 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
         });
     }
     @Override
-    public void move() { gameModel.move(); views.forEach(DataView::update); }
+    public void move() { gameModel.move();}
 }
