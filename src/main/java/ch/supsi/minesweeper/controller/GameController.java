@@ -16,13 +16,16 @@ import java.util.ResourceBundle;
 public class GameController implements GameEventHandler, PlayerEventHandler {
 
     private static GameController myself;
-    private final GameModel gameModel;
-    private List<DataView>  views;
-    private final int defaultBombs;
-
+    private final GameModel       gameModel;
+    private       List<DataView>  views;
+    private final int             defaultBombs;
+    private final ResourceBundle  bundle;
     private GameController() {
-        gameModel    = GameModel.getInstance();
-        defaultBombs = AppPreferences.getBombs();
+        this.gameModel    = GameModel.getInstance();
+        this.defaultBombs = AppPreferences.getBombs();
+        this.bundle       = ResourceBundle.getBundle(
+                "i18n.messages",
+                Locale.forLanguageTag(AppPreferences.getLang()));
     }
 
     public static GameController getInstance() {
@@ -31,82 +34,70 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
     }
 
     public void initialize(List<DataView> views) { this.views = views; }
-
-    private ResourceBundle rb() {
-        return ResourceBundle.getBundle(
-                "i18n.messages",
-                Locale.forLanguageTag(AppPreferences.getLang()));
-    }
+    private ResourceBundle rb() { return bundle; }
 
     @Override
     public void newGame() {
         Platform.runLater(() -> {
-            int max = gameModel.getRows() * gameModel.getCols() - 1;
-            int bombs = Math.max(1, Math.min(defaultBombs, max));   // clamp
+            int max   = gameModel.getRows() * gameModel.getCols() - 1;
+            int bombs = Math.max(1, Math.min(defaultBombs, max));
 
             gameModel.setMines(bombs);
             gameModel.newGame();
             views.forEach(DataView::update);
 
-            ResourceBundle rb = rb();
             Alert info = new Alert(AlertType.INFORMATION);
-            info.setTitle(rb.getString("dialog.new.title"));
+            info.setTitle(rb().getString("dialog.new.title"));
             info.setHeaderText(null);
             info.setContentText(
-                    MessageFormat.format(rb.getString("dialog.new.body"), bombs));
+                    MessageFormat.format(rb().getString("dialog.new.body"), bombs));
             info.showAndWait();
         });
     }
 
-    @Override public void save() { gameModel.save(); views.forEach(DataView::update); }
+    @Override
+    public void save() { gameModel.save(); views.forEach(DataView::update); }
 
     @Override
     public void help() {
         Platform.runLater(() -> {
-            ResourceBundle rb = rb();
             Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle(rb.getString("help.title"));
-            a.setHeaderText(rb.getString("help.header"));
-            a.setContentText(rb.getString("help.content"));
+            a.setTitle(rb().getString("help.title"));
+            a.setHeaderText(rb().getString("help.header"));
+            a.setContentText(rb().getString("help.content"));
             a.showAndWait();
         });
     }
     @Override
     public void about() {
         Platform.runLater(() -> {
-            ResourceBundle rb = rb();
             Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle(rb.getString("about.title"));
-            a.setHeaderText(rb.getString("about.header"));
-            a.setContentText(rb.getString("about.content"));
+            a.setTitle(rb().getString("about.title"));
+            a.setHeaderText(rb().getString("about.header"));
+            a.setContentText(rb().getString("about.content"));
             a.showAndWait();
         });
     }
-
     @Override
     public void win() {
         Platform.runLater(() -> {
-            ResourceBundle rb = rb();
             Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle(rb.getString("alert.win.title"));
+            a.setTitle(rb().getString("alert.win.title"));
             a.setHeaderText(null);
-            a.setContentText(rb.getString("alert.win.text"));
+            a.setContentText(rb().getString("alert.win.text"));
             a.showAndWait();
         });
     }
-
     @Override
     public void lose() {
         Platform.runLater(() -> {
-            ResourceBundle rb = rb();
             Alert a = new Alert(AlertType.ERROR);
-            a.setTitle(rb.getString("alert.lose.title"));
-            a.setHeaderText(rb.getString("alert.lose.header"));
-            a.setContentText(rb.getString("alert.lose.text"));
+            a.setTitle(rb().getString("alert.lose.title"));
+            a.setHeaderText(rb().getString("alert.lose.header"));
+            a.setContentText(rb().getString("alert.lose.text"));
             a.showAndWait();
         });
     }
-
     @Override
     public void move() { gameModel.move(); views.forEach(DataView::update); }
 }
