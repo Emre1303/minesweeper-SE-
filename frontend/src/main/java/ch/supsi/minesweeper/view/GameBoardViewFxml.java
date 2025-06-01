@@ -68,12 +68,12 @@ public class GameBoardViewFxml implements ControlledFxView {
     @Override public Node getNode() { return containerPane; }
 
     @Override public void update() {
-        for (Node n : containerPane.getChildren())
+        for (Node n : containerPane.getChildren())        //da cambiare perche non c'e' in java 17 instanceof
             if (n instanceof Button b) { b.setGraphic(null); b.setDisable(false); }
     }
 
     private void setupGrid() {
-        for (Node n : containerPane.getChildren()) if (n instanceof Button btn) {
+        for (Node n : containerPane.getChildren()) if (n instanceof Button btn) {    //da cambiare perche non c'e' in java 17 instanceof
             btn.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
             btn.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
             btn.setDisable(true);
@@ -123,7 +123,7 @@ public class GameBoardViewFxml implements ControlledFxView {
         }
     }
     private void disableAll() {
-        for (Node n : containerPane.getChildren()) if (n instanceof Button b) {
+        for (Node n : containerPane.getChildren()) if (n instanceof Button b) { //da cambiare perche non c'e' in java 17 instanceof
             int rr = Optional.ofNullable(GridPane.getRowIndex(b)).orElse(0);
             int cc = Optional.ofNullable(GridPane.getColumnIndex(b)).orElse(0);
             if (gameModel.hasMineAt(rr, cc)) b.setGraphic(makeIcon(bombImg));
@@ -140,7 +140,7 @@ public class GameBoardViewFxml implements ControlledFxView {
     }
     private Button getButtonAt(int row, int col) {
         for (Node n : containerPane.getChildren()) {
-            if (n instanceof Button b &&
+            if (n instanceof Button b &&   //da cambiare perche non c'e' in java 17 instanceof
                     Objects.equals(GridPane.getRowIndex(b), row) &&
                     Objects.equals(GridPane.getColumnIndex(b), col)) {
                 return b;

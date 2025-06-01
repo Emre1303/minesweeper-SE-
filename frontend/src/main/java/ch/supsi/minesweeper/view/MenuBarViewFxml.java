@@ -80,7 +80,7 @@ public class MenuBarViewFxml implements ControlledFxView {
         aboutMenuItem.setOnAction(e -> gameEventHandler.about());
         preferencesMenuItem.setOnAction(e -> showPreferencesDialog());
 
-        quitMenuItem.setOnAction(e -> {
+        quitMenuItem.setOnAction(e -> {  //da rivedere che non funziona
             ResourceBundle rb = bundle;
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
                     rb.getString("quit.ask"));
@@ -92,7 +92,7 @@ public class MenuBarViewFxml implements ControlledFxView {
                     .ifPresent(bt -> Platform.exit());
         });
     }
-    private void showPreferencesDialog() {
+    private void showPreferencesDialog() { //da separare (separation of concern)
 
         int    currentBombs = AppPreferences.getBombs();
         String currentLang  = AppPreferences.getLang();
