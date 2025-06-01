@@ -6,8 +6,8 @@
         <MenuItem fx:id="newMenuItem" mnemonicParsing="false" disable="false" text="New"/>
         <MenuItem fx:id="openMenuItem" mnemonicParsing="false" disable="false" text="Open..."/>
         <SeparatorMenuItem fx:id="sep1" mnemonicParsing="false"/>
-        <MenuItem fx:id="saveMenuItem" mnemonicParsing="false" disable="false" text="Save"/>
-        <MenuItem fx:id="saveAsMenuItem" mnemonicParsing="false" disable="false" text="Save as..."/>
+        <MenuItem fx:id="saveMenuItem" mnemonicParsing="false" disable="true" text="Save"/>
+        <MenuItem fx:id="saveAsMenuItem" mnemonicParsing="false" disable="true" text="Save as..."/>
         <SeparatorMenuItem fx:id="sep2" mnemonicParsing="false"/>
         <MenuItem fx:id="quitMenuItem" mnemonicParsing="false" disable="false" text="Quit"/>
     </Menu>

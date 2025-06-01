@@ -2,6 +2,8 @@ package ch.supsi.minesweeper.controller;
 
 import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
+import ch.supsi.minesweeper.model.JsonGamePersistence;
+import ch.supsi.minesweeper.model.GamePersistence;
 import ch.supsi.minesweeper.model.PlayerEventHandler;
 import ch.supsi.minesweeper.view.DataView;
 import ch.supsi.minesweeper.view.MenuBarViewFxml;
@@ -21,15 +23,17 @@ import java.util.ResourceBundle;
 public class GameController implements GameEventHandler, PlayerEventHandler {
 
     private static GameController myself;
-    private final GameModel       gameModel;
-    private       List<DataView>  views;
-    private final int             defaultBombs;
-    private final ResourceBundle  bundle;
+    private final GameModel        gameModel;
+    private final GamePersistence   persistence;
+    private       List<DataView>    views;
+    private final int               defaultBombs;
+    private final ResourceBundle    bundle;
 
     private Path currentFile = null;
 
     private GameController() {
         this.gameModel    = GameModel.getInstance();
+        this.persistence  = new JsonGamePersistence();
         this.defaultBombs = AppPreferences.getBombs();
         this.bundle       = ResourceBundle.getBundle(
                 "i18n.messages",
@@ -43,8 +47,7 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
 
     public void initialize(List<DataView> views) {
         this.views = views;
-        // Su avvio o newGame, riabilita Save/Save As
-        MenuBarViewFxml.getInstance().enableSaveOptions();
+        // save e save as restano disabilitate fino a newGame() o open()
     }
 
     private ResourceBundle rb() {
@@ -61,7 +64,7 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
             gameModel.newGame();
             views.forEach(DataView::update);
 
-            // Riabilita Save e Save As al nuovo gioco
+            // riabilita Save e Save As su nuova partita
             MenuBarViewFxml.getInstance().enableSaveOptions();
 
             Alert info = new Alert(AlertType.INFORMATION);
@@ -80,7 +83,7 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
             return;
         }
         try {
-            gameModel.saveToJson(currentFile);
+            persistence.save(gameModel, currentFile);
             views.forEach(DataView::update);
             Platform.runLater(() -> {
                 Alert info = new Alert(AlertType.INFORMATION,
@@ -109,7 +112,7 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
         if (file != null) {
             currentFile = file.toPath();
             try {
-                gameModel.saveToJson(currentFile);
+                persistence.save(gameModel, currentFile);
                 views.forEach(DataView::update);
                 Platform.runLater(() -> {
                     Alert info = new Alert(AlertType.INFORMATION,
@@ -131,13 +134,17 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
 
     @Override
     public void load() {
+        // Se non c’è ancora un currentFile, apri con FileChooser
         if (currentFile == null) {
             open();
             return;
         }
         try {
-            gameModel.loadFromJson(currentFile);
+            persistence.load(gameModel, currentFile);
             views.forEach(DataView::update);
+            // Riabilita Save/Save As dopo aver caricato
+            MenuBarViewFxml.getInstance().enableSaveOptions();
+
             Platform.runLater(() -> {
                 Alert info = new Alert(AlertType.INFORMATION,
                         rb().getString("dialog.load.success"));
@@ -165,8 +172,11 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
         if (file != null) {
             currentFile = file.toPath();
             try {
-                gameModel.loadFromJson(currentFile);
+                persistence.load(gameModel, currentFile);
                 views.forEach(DataView::update);
+                // Riabilita Save/Save As dopo aver caricato
+                MenuBarViewFxml.getInstance().enableSaveOptions();
+
                 Platform.runLater(() -> {
                     Alert info = new Alert(AlertType.INFORMATION,
                             rb().getString("dialog.load.success"));
@@ -210,9 +220,8 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
     @Override
     public void win() {
         Platform.runLater(() -> {
-            // Disabilita Save e Save As quando si vince
+            // disabilita Save e Save As quando si vince
             MenuBarViewFxml.getInstance().disableSaveOptions();
-
             Alert a = new Alert(AlertType.INFORMATION);
             a.setTitle(rb().getString("alert.win.title"));
             a.setHeaderText(null);
@@ -224,9 +233,8 @@ public class GameController implements GameEventHandler, PlayerEventHandler {
     @Override
     public void lose() {
         Platform.runLater(() -> {
-            // Disabilita Save e Save As quando si perde
+            // disabilita Save e Save As quando si perde
             MenuBarViewFxml.getInstance().disableSaveOptions();
-
             Alert a = new Alert(AlertType.ERROR);
             a.setTitle(rb().getString("alert.lose.title"));
             a.setHeaderText(rb().getString("alert.lose.header"));
