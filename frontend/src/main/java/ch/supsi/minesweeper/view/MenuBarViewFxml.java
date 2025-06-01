@@ -1,7 +1,7 @@
 package ch.supsi.minesweeper.view;
 
+import ch.supsi.minesweeper.controller.GameController;
 import ch.supsi.minesweeper.controller.EventHandler;
-import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.util.AppPreferences;
@@ -9,9 +9,11 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,28 +22,39 @@ import java.util.ResourceBundle;
 
 public class MenuBarViewFxml implements ControlledFxView {
 
-    private final ResourceBundle bundle;
-    private static MenuBarViewFxml myself;
-    private GameEventHandler gameEventHandler;
-    private GameModel        gameModel;
     @FXML private MenuBar  menuBar;
     @FXML private MenuItem newMenuItem;
+    @FXML private MenuItem openMenuItem;
     @FXML private MenuItem saveMenuItem;
+    @FXML private MenuItem saveAsMenuItem;
     @FXML private MenuItem quitMenuItem;
     @FXML private MenuItem preferencesMenuItem;
     @FXML private MenuItem helpMenuItem;
     @FXML private MenuItem aboutMenuItem;
 
-    private MenuBarViewFxml(ResourceBundle bundle) { this.bundle = bundle; }
+    private final ResourceBundle bundle;
+    private static MenuBarViewFxml myself;
+    private GameEventHandler gameEventHandler;
+    private GameModel        gameModel;
+
+    private MenuBarViewFxml(ResourceBundle bundle) {
+        this.bundle = bundle;
+    }
 
     public static MenuBarViewFxml getInstance(ResourceBundle bundle) {
         if (myself == null) {
             myself = new MenuBarViewFxml(bundle);
-            loadFxml(bundle);
+            try {
+                URL url = MenuBarViewFxml.class.getResource("/menubar.fxml");
+                FXMLLoader loader = new FXMLLoader(url, bundle);
+                loader.setController(myself);
+                loader.load();
+            } catch (IOException ex) {
+                throw new RuntimeException("Error loading menubar.fxml", ex);
+            }
         }
         return myself;
     }
-
 
     public static MenuBarViewFxml getInstance() {
         ResourceBundle def = ResourceBundle.getBundle(
@@ -50,73 +63,83 @@ public class MenuBarViewFxml implements ControlledFxView {
         return getInstance(def);
     }
 
-
-    private static void loadFxml(ResourceBundle bundle) {
-        try {
-            URL url = MenuBarViewFxml.class.getResource("/menubar.fxml");
-            FXMLLoader loader = new FXMLLoader(url, bundle);
-            loader.setController(myself);
-            loader.load();
-        } catch (IOException ex) {
-            throw new RuntimeException("Errore caricamento menubar.fxml", ex);
-        }
+    @Override
+    public void initialize(EventHandler h, ch.supsi.minesweeper.model.AbstractModel m) {
+        this.gameEventHandler = (GameEventHandler) h;
+        this.gameModel        = (GameModel) m;
+        createBehaviour();
     }
 
     @Override
-    public void initialize(EventHandler h, AbstractModel m) {
-        gameEventHandler = (GameEventHandler) h;
-        gameModel        = (GameModel) m;
-        createBehaviour();
+    public Node getNode() {
+        return menuBar;
     }
-    @Override public Node getNode() { return menuBar; }
-    @Override public void update()  {}
 
+    @Override
+    public void update() {
+    }
 
     private void createBehaviour() {
+        // Nuova partita
+        newMenuItem.setOnAction(e -> {
+            gameEventHandler.newGame();
+            enableSaveOptions();
+        });
 
-        newMenuItem.setOnAction(e -> gameEventHandler.newGame());
-        saveMenuItem.setOnAction(e -> gameEventHandler.save());
+        // Apri partita
+        openMenuItem.setOnAction(e -> ((GameController) gameEventHandler).open());
+
+        // Salva partita
+        saveMenuItem.setOnAction(e -> ((GameController) gameEventHandler).save());
+
+        // Salva come…
+        saveAsMenuItem.setOnAction(e -> ((GameController) gameEventHandler).saveAs());
+
+        // Help e About
         helpMenuItem.setOnAction(e -> gameEventHandler.help());
         aboutMenuItem.setOnAction(e -> gameEventHandler.about());
+
+        // Preferenze
         preferencesMenuItem.setOnAction(e -> showPreferencesDialog());
 
-        quitMenuItem.setOnAction(e -> {  //da rivedere che non funziona
-            ResourceBundle rb = bundle;
+        // Esci
+        quitMenuItem.setOnAction(e -> {
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                    rb.getString("quit.ask"));
+                    bundle.getString("quit.ask"));
             confirm.setHeaderText(null);
-            confirm.setTitle(rb.getString("quit.title"));
+            confirm.setTitle(bundle.getString("quit.title"));
             confirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
 
             confirm.showAndWait().filter(bt -> bt == ButtonType.YES)
                     .ifPresent(bt -> Platform.exit());
         });
     }
-    private void showPreferencesDialog() { //da separare (separation of concern)
 
+    private void showPreferencesDialog() {
         int    currentBombs = AppPreferences.getBombs();
         String currentLang  = AppPreferences.getLang();
-        int maxBombs = gameModel.getRows()*gameModel.getCols() - 1;
+        int maxBombs = gameModel.getRows() * gameModel.getCols() - 1;
 
-        Dialog<ButtonType> dlg = new Dialog<>();
+        javafx.scene.control.Dialog<ButtonType> dlg = new javafx.scene.control.Dialog<>();
         dlg.setTitle(bundle.getString("menu.preferences"));
         dlg.setHeaderText(bundle.getString("prefs.header"));
 
-        GridPane grid = new GridPane(); grid.setHgap(10); grid.setVgap(10);
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
 
-        TextField bombsField = new TextField(String.valueOf(currentBombs));
-        ComboBox<String> langBox = new ComboBox<>();
+        javafx.scene.control.TextField bombsField = new javafx.scene.control.TextField(String.valueOf(currentBombs));
+        javafx.scene.control.ComboBox<String> langBox = new javafx.scene.control.ComboBox<>();
         langBox.getItems().addAll("en", "it");
         langBox.setValue(currentLang);
 
         grid.addRow(0,
-                new Label(bundle.getString("prefs.bombs.label")), bombsField);
+                new javafx.scene.control.Label(bundle.getString("prefs.bombs.label")), bombsField);
         grid.addRow(1,
-                new Label(bundle.getString("prefs.lang.label")),  langBox);
+                new javafx.scene.control.Label(bundle.getString("prefs.lang.label")), langBox);
 
         dlg.getDialogPane().setContent(grid);
-        dlg.getDialogPane().getButtonTypes()
-                .addAll(ButtonType.OK, ButtonType.CANCEL);
+        dlg.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
         dlg.showAndWait().filter(bt -> bt == ButtonType.OK).ifPresent(bt -> {
             try {
@@ -137,5 +160,14 @@ public class MenuBarViewFxml implements ControlledFxView {
                         .showAndWait();
             }
         });
+    }
+
+    public void disableSaveOptions() {
+        saveMenuItem.setDisable(true);
+        saveAsMenuItem.setDisable(true);
+    }
+    public void enableSaveOptions() {
+        saveMenuItem.setDisable(false);
+        saveAsMenuItem.setDisable(false);
     }
 }

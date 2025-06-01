@@ -1,5 +1,8 @@
 package ch.supsi.minesweeper.model;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Random;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -10,7 +13,6 @@ public class GameModel extends AbstractModel
         implements GameEventHandler, PlayerEventHandler {
 
     private static GameModel myself;
-
     private final int rows  = 9;
     private final int cols  = 9;
     private int       mines = 10;
@@ -26,12 +28,11 @@ public class GameModel extends AbstractModel
     }
 
     public List<int[]> revealArea(int r, int c) {
-
         List<int[]> opened = new ArrayList<>();
         if (revealed[r][c] || flagged[r][c]) return opened;
 
         Queue<int[]> q = new ArrayDeque<>();
-        q.add(new int[]{r,c});
+        q.add(new int[]{r, c});
         revealed[r][c] = true;
 
         while (!q.isEmpty()) {
@@ -42,23 +43,29 @@ public class GameModel extends AbstractModel
             if (hasMine[row][col]) continue;
             if (neighborCount[row][col] != 0) continue;
 
-            for (int dr=-1; dr<=1; dr++)
-                for (int dc=-1; dc<=1; dc++) {
-                    if (dr==0 && dc==0) continue;
-                    int nr=row+dr, nc=col+dc;
-                    if (nr<0||nr>=rows||nc<0||nc>=cols) continue;
+            for (int dr = -1; dr <= 1; dr++) {
+                for (int dc = -1; dc <= 1; dc++) {
+                    if (dr == 0 && dc == 0) continue;
+                    int nr = row + dr, nc = col + dc;
+                    if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
                     if (!revealed[nr][nc] && !flagged[nr][nc]) {
                         revealed[nr][nc] = true;
-                        q.add(new int[]{nr,nc});
+                        q.add(new int[]{nr, nc});
                     }
                 }
+            }
         }
 
         revealedCount += opened.size();
         return opened;
     }
+
     public boolean isStarted() {
         return started;
+    }
+
+    public boolean isRevealed(int r, int c) {
+        return revealed[r][c];
     }
 
     private GameModel() {
@@ -77,11 +84,9 @@ public class GameModel extends AbstractModel
         return rows;
     }
 
-
     public int getCols() {
         return cols;
     }
-
 
     public int getMines() {
         return mines;
@@ -118,12 +123,12 @@ public class GameModel extends AbstractModel
         generateField();
         started = true;
     }
-    public void reset(){
+
+    public void reset() {
         started = false;
     }
 
     private void generateField() {
-        // reset
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 hasMine[r][c]       = false;
@@ -132,7 +137,6 @@ public class GameModel extends AbstractModel
                 flagged[r][c]       = false;
             }
         }
-        // piazza mine
         Random rnd = new Random();
         int placed = 0;
         while (placed < mines) {
@@ -143,7 +147,6 @@ public class GameModel extends AbstractModel
                 placed++;
             }
         }
-        // calcola conteggi
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 if (hasMine[r][c]) continue;
@@ -161,7 +164,6 @@ public class GameModel extends AbstractModel
             }
         }
     }
-
 
     public int revealCell(int r, int c) {
         if (revealed[r][c]) {
@@ -185,7 +187,6 @@ public class GameModel extends AbstractModel
         return flagged[r][c];
     }
 
-
     public boolean isWin() {
         return revealedCount == (rows * cols - mines);
     }
@@ -194,12 +195,88 @@ public class GameModel extends AbstractModel
         return hasMine[r][c];
     }
 
+    public void saveToJson(Path path) throws IOException {
+        GameStateJson state = new GameStateJson(this);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(path.toFile(), state);
+    }
 
+    public void loadFromJson(Path path) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        GameStateJson state = mapper.readValue(path.toFile(), GameStateJson.class);
 
-    @Override public void save()   { }
-    @Override public void move()   { }
-    @Override public void help()   { }
-    @Override public void about()  { }
-    @Override public void win()    { }
-    @Override public void lose()   { }
+        this.mines   = state.getMines();
+        this.started = true;
+
+        initField();
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                this.hasMine[r][c]   = state.getHasMine()[r][c];
+                this.revealed[r][c]  = state.getRevealed()[r][c];
+                this.flagged[r][c]   = state.getFlagged()[r][c];
+            }
+        }
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                if (hasMine[r][c]) {
+                    neighborCount[r][c] = 0;
+                    continue;
+                }
+                int cnt = 0;
+                for (int dr = -1; dr <= 1; dr++) {
+                    for (int dc = -1; dc <= 1; dc++) {
+                        if (dr == 0 && dc == 0) continue;
+                        int nr = r + dr, nc = c + dc;
+                        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && hasMine[nr][nc]) {
+                            cnt++;
+                        }
+                    }
+                }
+                neighborCount[r][c] = cnt;
+            }
+        }
+
+        revealedCount = 0;
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                if (revealed[r][c] && !hasMine[r][c]) {
+                    revealedCount++;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void save() {
+        try {
+            saveToJson(Path.of("gamestate.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void load() {
+        try {
+            loadFromJson(Path.of("gamestate.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void move() { }
+
+    @Override
+    public void help() { }
+
+    @Override
+    public void about() {}
+
+    @Override
+    public void win() {}
+
+    @Override
+    public void lose() {}
 }
