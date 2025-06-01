@@ -11,6 +11,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.GridPane;
@@ -77,6 +78,7 @@ public class MenuBarViewFxml implements ControlledFxView {
 
     @Override
     public void update() {
+        // Non usato nel menu, ma richiesto dall’interfaccia
     }
 
     private void createBehaviour() {
@@ -87,7 +89,11 @@ public class MenuBarViewFxml implements ControlledFxView {
         });
 
         // Apri partita
-        openMenuItem.setOnAction(e -> ((GameController) gameEventHandler).open());
+        openMenuItem.setOnAction(e -> {
+            ((GameController) gameEventHandler).open();
+            // Quando si apre una partita, ora c’è qualcosa da salvare
+            enableSaveOptions();
+        });
 
         // Salva partita
         saveMenuItem.setOnAction(e -> ((GameController) gameEventHandler).save());
@@ -113,6 +119,9 @@ public class MenuBarViewFxml implements ControlledFxView {
             confirm.showAndWait().filter(bt -> bt == ButtonType.YES)
                     .ifPresent(bt -> Platform.exit());
         });
+
+        // all’avvio (prima di creare una partita), disabilitiamo “Save” e “Save As”
+        disableSaveOptions();
     }
 
     private void showPreferencesDialog() {
@@ -120,7 +129,7 @@ public class MenuBarViewFxml implements ControlledFxView {
         String currentLang  = AppPreferences.getLang();
         int maxBombs = gameModel.getRows() * gameModel.getCols() - 1;
 
-        javafx.scene.control.Dialog<ButtonType> dlg = new javafx.scene.control.Dialog<>();
+        Dialog<ButtonType> dlg = new Dialog<>();
         dlg.setTitle(bundle.getString("menu.preferences"));
         dlg.setHeaderText(bundle.getString("prefs.header"));
 
@@ -148,12 +157,10 @@ public class MenuBarViewFxml implements ControlledFxView {
 
                 AppPreferences.setBombs(bombs);
                 AppPreferences.setLang(langBox.getValue());
-                AppPreferences.save();
 
                 new Alert(Alert.AlertType.INFORMATION,
                         bundle.getString("prefs.saved"))
                         .showAndWait();
-
             } catch (NumberFormatException ex) {
                 new Alert(Alert.AlertType.ERROR,
                         bundle.getString("prefs.error") + " 1–" + maxBombs + ".")

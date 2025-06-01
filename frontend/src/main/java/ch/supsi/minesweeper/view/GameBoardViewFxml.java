@@ -15,7 +15,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
@@ -53,13 +52,6 @@ public class GameBoardViewFxml implements ControlledFxView {
             }
         }
         return myself;
-    }
-
-    public static GameBoardViewFxml getInstance() {
-        ResourceBundle def = ResourceBundle.getBundle(
-                "i18n.messages",
-                Locale.forLanguageTag(AppPreferences.getLang()));
-        return getInstance(def);
     }
 
     @Override
