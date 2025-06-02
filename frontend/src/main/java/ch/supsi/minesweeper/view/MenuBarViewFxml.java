@@ -120,6 +120,8 @@ public class MenuBarViewFxml implements ControlledFxView {
                     .ifPresent(bt -> Platform.exit());
         });
 
+
+
         // all’avvio (prima di creare una partita), disabilitiamo “Save” e “Save As”
         disableSaveOptions();
     }
