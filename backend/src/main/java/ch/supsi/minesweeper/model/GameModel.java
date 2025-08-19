@@ -28,7 +28,6 @@ public class GameModel extends AbstractModel
         return myself;
     }
 
-
     public int getRows()     { return rows; }
     public int getCols()     { return cols; }
     public int getMines()    { return mines; }
@@ -168,7 +167,7 @@ public class GameModel extends AbstractModel
         return revealedCount == (rows * cols - mines);
     }
 
-    void loadFromState(GameStateJson state) {
+    public void loadFromState(GameStateJson state) {
         this.mines = state.getMines();
 
         // Ricreo matrici e copio campi
@@ -210,14 +209,13 @@ public class GameModel extends AbstractModel
         }
     }
 
-    void markStarted() {
+    public void markStarted() {
         this.started = true;
     }
 
     @Override
     public void move() {
     }
-
 
     @Override
     public void save() {

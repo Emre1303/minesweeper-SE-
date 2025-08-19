@@ -2,8 +2,8 @@ package ch.supsi.minesweeper.controller;
 
 import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
-import ch.supsi.minesweeper.model.JsonGamePersistence;
-import ch.supsi.minesweeper.model.GamePersistence;
+import ch.supsi.minesweeper.infrastructure.JsonGamePersistence;
+import ch.supsi.minesweeper.persistence.GamePersistence;
 import ch.supsi.minesweeper.model.PlayerEventHandler;
 import ch.supsi.minesweeper.view.DataView;
 import ch.supsi.minesweeper.view.MenuBarViewFxml;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public class GameController implements GameEventHandler, PlayerEventHandler {
+public class GameController implements EventHandler {
 
     private static GameController myself;
     private final GameModel        gameModel;

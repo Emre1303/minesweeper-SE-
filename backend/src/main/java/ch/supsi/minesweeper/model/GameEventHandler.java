@@ -1,8 +1,6 @@
 package ch.supsi.minesweeper.model;
 
-import ch.supsi.minesweeper.controller.EventHandler;
-
-public interface GameEventHandler extends EventHandler {
+public interface GameEventHandler{
     void newGame();
     void save();
     void load();     // ← deve esserci

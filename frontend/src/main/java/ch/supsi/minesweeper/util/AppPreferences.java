@@ -62,7 +62,6 @@ public final class AppPreferences {
         save();
     }
 
-
     public static void setLang(String lang) {
         props.setProperty(KEY_LANG, lang);
         save();
