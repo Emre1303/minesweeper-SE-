@@ -9,16 +9,13 @@ public class GameModel extends AbstractModel
     private final int rows  = 9;
     private final int cols  = 9;
     private int mines = 10;
-    private boolean[][] hasMine;
-    private int[][]     neighborCount;
-    private boolean[][] revealed;
-    private boolean[][] flagged;
-    private int revealedCount;
     private boolean started = false;
+    private final Grid g;
 
     private GameModel() {
         super();
-        initField();
+        this.g = new Grid(rows, cols);
+        g.clear();
     }
 
     public static GameModel getInstance() {
@@ -40,39 +37,26 @@ public class GameModel extends AbstractModel
     }
 
     public boolean isStarted()            { return started; }
-    public boolean isRevealed(int r, int c) { return revealed[r][c]; }
-    public boolean hasMineAt(int r, int c)  { return hasMine[r][c]; }
-    public boolean isFlagged(int r, int c)  { return flagged[r][c]; }
-    public int getNeighborCountAt(int r, int c) { return neighborCount[r][c]; }
+    public boolean isRevealed(int r, int c) { return g.revealed[r][c]; }
+    public boolean hasMineAt(int r, int c)  { return g.hasMine[r][c]; }
+    public boolean isFlagged(int r, int c)  { return g.flagged[r][c]; }
+    public int getNeighborCountAt(int r, int c) { return g.neighborCount[r][c]; }
+    public int getFlaggedCount() { return g.getFlaggedCount(); }
 
-    public int getFlaggedCount() {
-        int cnt = 0;
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (flagged[r][c]) cnt++;
-            }
-        }
-        return cnt;
-    }
-
-    private void initField() {
+   /* private void initField() {
         hasMine       = new boolean[rows][cols];
         neighborCount = new int[rows][cols];
         revealed      = new boolean[rows][cols];
         flagged       = new boolean[rows][cols];
         revealedCount = 0;
-    }
+    }*/
 
     @Override
     public void newGame() {
-        initField();
-        generateField();
+        FieldGenerator.generate(g, mines);
         started = true;
     }
 
-    public void reset() {
-        started = false;
-    }
 
     private void generateField() {
         // reset
@@ -114,88 +98,23 @@ public class GameModel extends AbstractModel
         }
     }
     public List<int[]> revealArea(int r, int c) {
-        List<int[]> opened = new ArrayList<>();
-        if (revealed[r][c] || flagged[r][c]) return opened;
-
-        Queue<int[]> queue = new ArrayDeque<>();
-        queue.add(new int[]{r, c});
-        revealed[r][c] = true;
-
-        while (!queue.isEmpty()) {
-            int[] pos = queue.poll();
-            int row = pos[0], col = pos[1];
-            opened.add(pos);
-
-            if (hasMine[row][col]) continue;
-            if (neighborCount[row][col] != 0) continue;
-
-            for (int dr = -1; dr <= 1; dr++) {
-                for (int dc = -1; dc <= 1; dc++) {
-                    if (dr == 0 && dc == 0) continue;
-                    int nr = row + dr, nc = col + dc;
-                    if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
-                    if (!revealed[nr][nc] && !flagged[nr][nc]) {
-                        revealed[nr][nc] = true;
-                        queue.add(new int[]{nr, nc});
-                    }
-                }
-            }
-        }
-        revealedCount += opened.size();
-        return opened;
+        return AreaRevealer.revealArea(g, r, c);
     }
 
 
     public void toggleFlag(int r, int c) {
-        if (!revealed[r][c]) {
-            flagged[r][c] = !flagged[r][c];
+        if (!g.revealed[r][c]) {
+            g.flagged[r][c] = !g.flagged[r][c];
         }
     }
 
     public boolean isWin() {
-        return revealedCount == (rows * cols - mines);
+        return g.revealedCount == (rows * cols - mines);
     }
 
     public void loadFromState(GameStateJson state) {
         this.mines = state.getMines();
-
-        // Ricreo matrici e copio campi
-        initField();
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                this.hasMine[r][c]  = state.getHasMine()[r][c];
-                this.revealed[r][c] = state.getRevealed()[r][c];
-                this.flagged[r][c]  = state.getFlagged()[r][c];
-            }
-        }
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (hasMine[r][c]) {
-                    neighborCount[r][c] = 0;
-                } else {
-                    int cnt = 0;
-                    for (int dr = -1; dr <= 1; dr++) {
-                        for (int dc = -1; dc <= 1; dc++) {
-                            if (dr == 0 && dc == 0) continue;
-                            int nr = r + dr, nc = c + dc;
-                            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && hasMine[nr][nc]) {
-                                cnt++;
-                            }
-                        }
-                    }
-                    neighborCount[r][c] = cnt;
-                }
-            }
-        }
-        // Riconta revealedCount (escludendo le mine)
-        revealedCount = 0;
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (revealed[r][c] && !hasMine[r][c]) {
-                    revealedCount++;
-                }
-            }
-        }
+        StateLoader.load(g, state);
     }
 
     public void markStarted() {
