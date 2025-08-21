@@ -145,17 +145,6 @@ public class GameModel extends AbstractModel
         return opened;
     }
 
-    public int revealCell(int r, int c) {
-        if (revealed[r][c]) {
-            return neighborCount[r][c];
-        }
-        revealed[r][c] = true;
-        if (hasMine[r][c]) {
-            return -1;
-        }
-        revealedCount++;
-        return neighborCount[r][c];
-    }
 
     public void toggleFlag(int r, int c) {
         if (!revealed[r][c]) {
