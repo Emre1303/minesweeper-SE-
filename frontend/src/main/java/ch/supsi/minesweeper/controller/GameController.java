@@ -1,44 +1,27 @@
 package ch.supsi.minesweeper.controller;
 
 import ch.supsi.minesweeper.model.GameModel;
-import ch.supsi.minesweeper.persistence.JsonGameRepository;
-import ch.supsi.minesweeper.service.GameRepository;
 import ch.supsi.minesweeper.service.GameService;
 import ch.supsi.minesweeper.view.DataView;
-import ch.supsi.minesweeper.view.MenuBarViewFxml;
-import ch.supsi.minesweeper.util.AppPreferences;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.stage.FileChooser;
-import java.io.File;
-import java.nio.file.Path;
-import java.text.MessageFormat;
+
 import java.util.List;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class GameController implements EventHandler {
 
     private static GameController myself;
-    private final GameModel        gameModel;
-    private GameService gameService;
-    private       List<DataView>    views;
-    private final int               defaultBombs;
-    private final ResourceBundle    bundle;
 
-    private Path currentFile = null;
+    private final GameModel gameModel;
+    private GameService gameService;
+
+    private MenuController menu;
+    private List<DataView> views;
 
     private GameController() {
-        this.gameModel    = GameModel.getInstance();
-        this.defaultBombs = AppPreferences.getBombs();
-        this.bundle       = ResourceBundle.getBundle(
-                "i18n.messages",
-                Locale.forLanguageTag(AppPreferences.getLang()));
-    }
-
-    public void setGameService(GameService gameService) {
-        this.gameService = gameService;
+        this.gameModel = GameModel.getInstance();
     }
 
     public static GameController getInstance() {
@@ -46,206 +29,42 @@ public class GameController implements EventHandler {
         return myself;
     }
 
+    public void setGameService(GameService gameService) { this.gameService = gameService; }
+
+    public void attachMenuController(ResourceBundle bundle, int defaultBombs) {
+        this.menu = new MenuController(gameService, gameModel, bundle, defaultBombs);
+        if (views != null) this.menu.initialize(views);
+    }
+
     public void initialize(List<DataView> views) {
         this.views = views;
-        // save e save as restano disabilitate fino a newGame() o open()
+        if (this.menu != null) this.menu.initialize(views);
     }
 
-    private ResourceBundle rb() {
-        return bundle;
+    public void reveal(int r, int c) {
+        gameService.revealArea(r, c);
+        if (views != null) views.forEach(DataView::update);
+        if (gameService.isWin()) win();
     }
 
-    @Override
-    public void newGame() {
-        Platform.runLater(() -> {
-            int max   = gameModel.getRows() * gameModel.getCols() - 1;
-            int bombs = Math.max(1, Math.min(defaultBombs, max));
-
-            gameModel.setMines(bombs);
-            gameService.newGame();
-            views.forEach(DataView::update);
-
-            // riabilita Save e Save As su nuova partita
-            MenuBarViewFxml.getInstance().enableSaveOptions();
-
-            Alert info = new Alert(AlertType.INFORMATION);
-            info.setTitle(rb().getString("dialog.new.title"));
-            info.setHeaderText(null);
-            info.setContentText(
-                    MessageFormat.format(rb().getString("dialog.new.body"), bombs));
-            info.showAndWait();
-        });
+    public void toggleFlag(int r, int c) {
+        gameService.toggleFlag(r, c);
+        if (views != null) views.forEach(DataView::update);
     }
 
-    @Override
-    public void save() {
-        if (currentFile == null) {
-            saveAs();
-            return;
-        }
-        try {
-            gameService.save(currentFile);
-            views.forEach(DataView::update);
-            Platform.runLater(() -> {
-                Alert info = new Alert(AlertType.INFORMATION,
-                        rb().getString("dialog.save.success"));
-                info.setHeaderText(null);
-                info.showAndWait();
-            });
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            Platform.runLater(() -> {
-                Alert err = new Alert(AlertType.ERROR,
-                        rb().getString("dialog.save.error"));
-                err.setHeaderText(null);
-                err.showAndWait();
-            });
-        }
-    }
+    @Override public void move() { gameModel.move(); }
 
-    public void saveAs() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle(rb().getString("menu.file.saveas"));
-        chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("JSON Files", "*.json")
-        );
-        File file = chooser.showSaveDialog(null);
-        if (file != null) {
-            currentFile = file.toPath();
-            try {
-                gameService.save(currentFile);
-                views.forEach(DataView::update);
-                Platform.runLater(() -> {
-                    Alert info = new Alert(AlertType.INFORMATION,
-                            rb().getString("dialog.save.success"));
-                    info.setHeaderText(null);
-                    info.showAndWait();
-                });
-            } catch (RuntimeException ex) {
-                ex.printStackTrace();
-                Platform.runLater(() -> {
-                    Alert err = new Alert(AlertType.ERROR,
-                            rb().getString("dialog.save.error"));
-                    err.setHeaderText(null);
-                    err.showAndWait();
-                });
-            }
-        }
-    }
+    @Override public void newGame()      { menu.newGame(); }
+    @Override public void save()         { menu.save(); }
+    public  void saveAs()                { menu.saveAs(); }
+    @Override public void load()         { menu.load(); }
+    public  void open()                  { menu.open(); }
+    @Override public void help()         { menu.help(); }
+    @Override public void about()        { menu.about(); }
+    @Override public void win()          { menu.win(); }
+    @Override public void lose()         { menu.lose(); }
 
-    @Override
-    public void load() {
-        // Se non c’è ancora un currentFile, apri con FileChooser
-        if (currentFile == null) {
-            open();
-            return;
-        }
-        try {
-            gameService.load(currentFile);
-            views.forEach(DataView::update);
-            // Riabilita Save/Save As dopo aver caricato
-            MenuBarViewFxml.getInstance().enableSaveOptions();
-
-            Platform.runLater(() -> {
-                Alert info = new Alert(AlertType.INFORMATION,
-                        rb().getString("dialog.load.success"));
-                info.setHeaderText(null);
-                info.showAndWait();
-            });
-        } catch (RuntimeException ex) {
-            ex.printStackTrace();
-            Platform.runLater(() -> {
-                Alert err = new Alert(AlertType.ERROR,
-                        rb().getString("dialog.load.error"));
-                err.setHeaderText(null);
-                err.showAndWait();
-            });
-        }
-    }
-
-    public void open() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle(rb().getString("menu.file.open"));
-        chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("JSON Files", "*.json")
-        );
-        File file = chooser.showOpenDialog(null);
-        if (file != null) {
-            currentFile = file.toPath();
-            try {
-                gameService.load(currentFile);
-                views.forEach(DataView::update);
-                // Riabilita Save/Save As dopo aver caricato
-                MenuBarViewFxml.getInstance().enableSaveOptions();
-
-                Platform.runLater(() -> {
-                    Alert info = new Alert(AlertType.INFORMATION,
-                            rb().getString("dialog.load.success"));
-                    info.setHeaderText(null);
-                    info.showAndWait();
-                });
-            } catch (RuntimeException ex) {
-                ex.printStackTrace();
-                Platform.runLater(() -> {
-                    Alert err = new Alert(AlertType.ERROR,
-                            rb().getString("dialog.load.error"));
-                    err.setHeaderText(null);
-                    err.showAndWait();
-                });
-            }
-        }
-    }
-
-    @Override
-    public void help() {
-        Platform.runLater(() -> {
-            Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle(rb().getString("help.title"));
-            a.setHeaderText(rb().getString("help.header"));
-            a.setContentText(rb().getString("help.content"));
-            a.showAndWait();
-        });
-    }
-
-    @Override
-    public void about() {
-        Platform.runLater(() -> {
-            Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle(rb().getString("about.title"));
-            a.setHeaderText(rb().getString("about.header"));
-            a.setContentText(rb().getString("about.content"));
-            a.showAndWait();
-        });
-    }
-
-    @Override
-    public void win() {
-        Platform.runLater(() -> {
-            // disabilita Save e Save As quando si vince
-            MenuBarViewFxml.getInstance().disableSaveOptions();
-            Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle(rb().getString("alert.win.title"));
-            a.setHeaderText(null);
-            a.setContentText(rb().getString("alert.win.text"));
-            a.showAndWait();
-        });
-    }
-
-    @Override
-    public void lose() {
-        Platform.runLater(() -> {
-            // disabilita Save e Save As quando si perde
-            MenuBarViewFxml.getInstance().disableSaveOptions();
-            Alert a = new Alert(AlertType.ERROR);
-            a.setTitle(rb().getString("alert.lose.title"));
-            a.setHeaderText(rb().getString("alert.lose.header"));
-            a.setContentText(rb().getString("alert.lose.text"));
-            a.showAndWait();
-        });
-    }
-
-    @Override
-    public void move() {
-        gameModel.move();
+    private void toast(String msg){
+        Platform.runLater(() -> new Alert(AlertType.INFORMATION, msg).showAndWait());
     }
 }

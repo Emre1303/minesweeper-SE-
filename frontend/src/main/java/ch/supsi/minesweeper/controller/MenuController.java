@@ -1,0 +1,156 @@
+package ch.supsi.minesweeper.controller;
+
+import ch.supsi.minesweeper.model.GameModel;
+import ch.supsi.minesweeper.service.GameService;
+import ch.supsi.minesweeper.view.DataView;
+import ch.supsi.minesweeper.view.MenuBarViewFxml;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.stage.FileChooser;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.ResourceBundle;
+
+class MenuController {
+
+    private final GameService gameService;
+    private final GameModel gameModel;
+    private final ResourceBundle bundle;
+    private final int defaultBombs;
+
+    private List<DataView> views;
+    private Path currentFile;
+
+    MenuController(GameService gameService,
+                   GameModel gameModel,
+                   ResourceBundle bundle,
+                   int defaultBombs) {
+        this.gameService = gameService;
+        this.gameModel   = gameModel;
+        this.bundle      = bundle;
+        this.defaultBombs = defaultBombs;
+    }
+
+    void initialize(List<DataView> views) { this.views = views; }
+
+    private ResourceBundle rb() { return bundle; }
+
+
+    void newGame() {
+        Platform.runLater(() -> {
+            int max   = gameModel.getRows() * gameModel.getCols() - 1;
+            int bombs = Math.max(1, Math.min(defaultBombs, max));
+
+            gameModel.setMines(bombs);
+            gameService.newGame();
+            if (views != null) views.forEach(DataView::update);
+
+            MenuBarViewFxml.getInstance().enableSaveOptions();
+
+            Alert info = new Alert(AlertType.INFORMATION);
+            info.setTitle(rb().getString("dialog.new.title"));
+            info.setHeaderText(null);
+            info.setContentText(MessageFormat.format(rb().getString("dialog.new.body"), bombs));
+            info.showAndWait();
+        });
+    }
+
+    void save() {
+        if (currentFile == null) { saveAs(); return; }
+        try {
+            gameService.save(currentFile);
+            if (views != null) views.forEach(DataView::update);
+            Platform.runLater(() -> {
+                Alert info = new Alert(AlertType.INFORMATION, rb().getString("dialog.save.success"));
+                info.setHeaderText(null); info.showAndWait();
+            });
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            Platform.runLater(() -> {
+                Alert err = new Alert(AlertType.ERROR, rb().getString("dialog.save.error"));
+                err.setHeaderText(null); err.showAndWait();
+            });
+        }
+    }
+
+    void saveAs() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(rb().getString("menu.file.saveas"));
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+        File file = chooser.showSaveDialog(null);
+        if (file != null) { currentFile = file.toPath(); save(); }
+    }
+
+    void load() {
+        if (currentFile == null) { open(); return; }
+        try {
+            gameService.load(currentFile);
+            if (views != null) views.forEach(DataView::update);
+            MenuBarViewFxml.getInstance().enableSaveOptions();
+            Platform.runLater(() -> {
+                Alert info = new Alert(AlertType.INFORMATION, rb().getString("dialog.load.success"));
+                info.setHeaderText(null); info.showAndWait();
+            });
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            Platform.runLater(() -> {
+                Alert err = new Alert(AlertType.ERROR, rb().getString("dialog.load.error"));
+                err.setHeaderText(null); err.showAndWait();
+            });
+        }
+    }
+
+    void open() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(rb().getString("menu.file.open"));
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+        File file = chooser.showOpenDialog(null);
+        if (file != null) { currentFile = file.toPath(); load(); }
+    }
+
+    void help()  {
+        Platform.runLater(() -> {
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setTitle(rb().getString("help.title"));
+            a.setHeaderText(rb().getString("help.header"));
+            a.setContentText(rb().getString("help.content"));
+            a.showAndWait();
+        });
+    }
+
+    void about() {
+        Platform.runLater(() -> {
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setTitle(rb().getString("about.title"));
+            a.setHeaderText(rb().getString("about.header"));
+            a.setContentText(rb().getString("about.content"));
+            a.showAndWait();
+        });
+    }
+
+    void win() {
+        Platform.runLater(() -> {
+            MenuBarViewFxml.getInstance().disableSaveOptions();
+            Alert a = new Alert(AlertType.INFORMATION);
+            a.setTitle(rb().getString("alert.win.title"));
+            a.setHeaderText(null);
+            a.setContentText(rb().getString("alert.win.text"));
+            a.showAndWait();
+        });
+    }
+
+    void lose() {
+        Platform.runLater(() -> {
+            MenuBarViewFxml.getInstance().disableSaveOptions();
+            Alert a = new Alert(AlertType.ERROR);
+            a.setTitle(rb().getString("alert.lose.title"));
+            a.setHeaderText(rb().getString("alert.lose.header"));
+            a.setContentText(rb().getString("alert.lose.text"));
+            a.showAndWait();
+        });
+    }
+}

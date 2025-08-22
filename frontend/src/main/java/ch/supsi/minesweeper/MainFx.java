@@ -49,6 +49,8 @@ public class MainFx extends Application {
 
         controller.setGameService(gameService);
 
+        controller.attachMenuController(bundle, AppPreferences.getBombs());
+
         menuBarView.initialize((EventHandler) controller, model);
         gameBoardView.initialize((EventHandler) controller, model);
         feedbackView.initialize(model);
