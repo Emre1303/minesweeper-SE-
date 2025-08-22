@@ -2,7 +2,7 @@ package ch.supsi.minesweeper.controller;
 
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.service.GameService;
-import ch.supsi.minesweeper.util.AppInfo;
+import ch.supsi.minesweeper.util.BuildInfo;
 import ch.supsi.minesweeper.view.DataView;
 import ch.supsi.minesweeper.view.MenuBarViewFxml;
 import javafx.application.Platform;
@@ -127,9 +127,12 @@ class MenuController {
         Platform.runLater(() -> {
             Alert a = new Alert(AlertType.INFORMATION);
             a.setTitle(rb().getString("about.title"));
-            a.setTitle("About " + AppInfo.getName());
-            a.setHeaderText(AppInfo.getName() + " v" + AppInfo.getVersion());
-            a.setContentText(AppInfo.getDescription() + "\nAuthor: " + AppInfo.getAuthor());
+            a.setTitle("About " + BuildInfo.getName());
+            a.setHeaderText(BuildInfo.getName() + " Versione: " + BuildInfo.getVersion());
+            a.setContentText(BuildInfo.getDescription() +
+                    "\nAuthor: " + BuildInfo.getAuthor() +
+                    "\nBuilt on: " + BuildInfo.buildDate()
+            );
             a.showAndWait();
         });
     }

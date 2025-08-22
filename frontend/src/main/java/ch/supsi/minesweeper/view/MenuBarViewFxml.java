@@ -98,7 +98,7 @@ public class MenuBarViewFxml implements ControlledFxView {
         // Salva partita
         saveMenuItem.setOnAction(e -> ((GameController) gameEventHandler).save());
 
-        // Salva come…
+        // Salva come
         saveAsMenuItem.setOnAction(e -> ((GameController) gameEventHandler).saveAs());
 
         // Help e About

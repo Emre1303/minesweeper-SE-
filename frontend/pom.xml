@@ -18,7 +18,8 @@
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
+        <build.timestamp>${maven.build.timestamp}</build.timestamp>
+        <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
 
     </properties>
 
@@ -41,7 +42,6 @@
     </dependencies>
 
     <build>
-        <!-- 🔥 Abilita il filtering dei file in src/main/resources -->
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
