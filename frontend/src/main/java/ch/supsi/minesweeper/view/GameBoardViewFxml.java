@@ -117,66 +117,18 @@ public class GameBoardViewFxml implements ControlledFxView {
         if (!gameModel.isStarted()) return;
 
         if (e.getButton() == MouseButton.SECONDARY) {
-            gameModel.toggleFlag(r, c);
-            if (gameModel.isFlagged(r, c)) {
-                btn.setGraphic(makeIcon(flagImg));
-            } else {
-                btn.setGraphic(null);
-            }
-            UserFeedbackViewFxml.getInstance().update();
-        }
-        else if (e.getButton() == MouseButton.PRIMARY && !gameModel.isFlagged(r, c)) {
-            revealCell(r, c);
+            playerEventHandler.toggleFlag(r, c);
+        } else if (e.getButton() == MouseButton.PRIMARY && !gameModel.isFlagged(r, c)) {
+            playerEventHandler.reveal(r, c);
         }
         e.consume();
     }
 
-    private void revealCell(int r, int c) {
-        List<int[]> opened = gameModel.revealArea(r, c);
 
-        for (int[] pos : opened) {
-            int row = pos[0], col = pos[1];
-            Button b = getButtonAt(row, col);
-
-            if (gameModel.hasMineAt(row, col)) {
-                b.setGraphic(makeIcon(bombImg));
-            } else {
-                int cnt = gameModel.getNeighborCountAt(row, col);
-                if (cnt > 0) {
-                    b.setGraphic(makeIcon(numberImages.get(cnt)));
-                } else {
-                    b.setGraphic(null);
-                }
-            }
-            b.setDisable(true);
-        }
-
-        if (gameModel.hasMineAt(r, c)) {
-            disableAll();
-            gameEventHandler.lose();
-        }
-        else if (gameModel.isWin()) {
-            disableAll();
-            gameEventHandler.win();
-        }
-    }
-
-    private void disableAll() {
-        for (Node n : containerPane.getChildren()) {
-            Button b = (Button) n;
-            int rr = Optional.ofNullable(GridPane.getRowIndex(b)).orElse(0);
-            int cc = Optional.ofNullable(GridPane.getColumnIndex(b)).orElse(0);
-            if (gameModel.hasMineAt(rr, cc)) {
-                b.setGraphic(makeIcon(bombImg));
-            }
-            b.setDisable(true);
-        }
-    }
 
     private void loadImages() {
         for (int i = 1; i <= 8; i++) {
-            numberImages.put(i,
-                    new Image(getClass().getResourceAsStream("/images/" + i + ".png")));
+            numberImages.put(i, new Image(getClass().getResourceAsStream("/images/" + i + ".png")));
         }
         flagImg = new Image(getClass().getResourceAsStream("/images/flag.png"));
         bombImg = new Image(getClass().getResourceAsStream("/images/bomb.png"));

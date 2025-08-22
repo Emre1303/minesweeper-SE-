@@ -5,6 +5,7 @@ import ch.supsi.minesweeper.service.GameService;
 import ch.supsi.minesweeper.util.BuildInfo;
 import ch.supsi.minesweeper.view.DataView;
 import ch.supsi.minesweeper.view.MenuBarViewFxml;
+import ch.supsi.minesweeper.view.UserFeedbackViewFxml;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -19,7 +20,6 @@ import java.util.ResourceBundle;
 class MenuController {
 
     private final GameService gameService;
-    private final GameModel gameModel;
     private final ResourceBundle bundle;
     private final int defaultBombs;
 
@@ -27,11 +27,9 @@ class MenuController {
     private Path currentFile;
 
     MenuController(GameService gameService,
-                   GameModel gameModel,
                    ResourceBundle bundle,
                    int defaultBombs) {
         this.gameService = gameService;
-        this.gameModel   = gameModel;
         this.bundle      = bundle;
         this.defaultBombs = defaultBombs;
     }
@@ -43,20 +41,17 @@ class MenuController {
 
     void newGame() {
         Platform.runLater(() -> {
-            int max   = gameModel.getRows() * gameModel.getCols() - 1;
+            int max   = gameService.getRows() * gameService.getCols() - 1;
             int bombs = Math.max(1, Math.min(defaultBombs, max));
 
-            gameModel.setMines(bombs);
+            gameService.setMines(bombs);
             gameService.newGame();
             if (views != null) views.forEach(DataView::update);
 
             MenuBarViewFxml.getInstance().enableSaveOptions();
 
-            Alert info = new Alert(AlertType.INFORMATION);
-            info.setTitle(rb().getString("dialog.new.title"));
-            info.setHeaderText(null);
-            info.setContentText(MessageFormat.format(rb().getString("dialog.new.body"), bombs));
-            info.showAndWait();
+            UserFeedbackViewFxml.getInstance().showMessage(MessageFormat.format(rb().getString("dialog.new.body"), bombs)
+            );
         });
     }
 
@@ -66,14 +61,12 @@ class MenuController {
             gameService.save(currentFile);
             if (views != null) views.forEach(DataView::update);
             Platform.runLater(() -> {
-                Alert info = new Alert(AlertType.INFORMATION, rb().getString("dialog.save.success"));
-                info.setHeaderText(null); info.showAndWait();
+                UserFeedbackViewFxml.getInstance().showMessage(rb().getString("dialog.save.success"));
             });
         } catch (RuntimeException e) {
             e.printStackTrace();
             Platform.runLater(() -> {
-                Alert err = new Alert(AlertType.ERROR, rb().getString("dialog.save.error"));
-                err.setHeaderText(null); err.showAndWait();
+                UserFeedbackViewFxml.getInstance().showMessage(rb().getString("dialog.save.error"));
             });
         }
     }
@@ -93,14 +86,12 @@ class MenuController {
             if (views != null) views.forEach(DataView::update);
             MenuBarViewFxml.getInstance().enableSaveOptions();
             Platform.runLater(() -> {
-                Alert info = new Alert(AlertType.INFORMATION, rb().getString("dialog.load.success"));
-                info.setHeaderText(null); info.showAndWait();
+                UserFeedbackViewFxml.getInstance().showMessage(rb().getString("dialog.load.success"));
             });
         } catch (RuntimeException e) {
             e.printStackTrace();
             Platform.runLater(() -> {
-                Alert err = new Alert(AlertType.ERROR, rb().getString("dialog.load.error"));
-                err.setHeaderText(null); err.showAndWait();
+                UserFeedbackViewFxml.getInstance().showMessage(rb().getString("dialog.load.error"));
             });
         }
     }
@@ -115,20 +106,21 @@ class MenuController {
 
     void help()  {
         Platform.runLater(() -> {
-            Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle(rb().getString("help.title"));
-            a.setHeaderText(rb().getString("help.header"));
-            a.setContentText(rb().getString("help.content"));
-            a.showAndWait();
+            String title   = rb().getString("help.title");
+            String header  = rb().getString("help.header");
+            String content = rb().getString("help.content");
+
+            String fullMsg = title + "\n" + header + ":\n" + content;
+
+            UserFeedbackViewFxml.getInstance().showMessageSticky(fullMsg);
         });
     }
 
     void about() {
         Platform.runLater(() -> {
             Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle(rb().getString("about.title"));
             a.setTitle("About " + BuildInfo.getName());
-            a.setHeaderText(BuildInfo.getName() + " Versione: " + BuildInfo.getVersion());
+            a.setHeaderText(BuildInfo.getName() + "  |  Versione: " + BuildInfo.getVersion());
             a.setContentText(BuildInfo.getDescription() +
                     "\nAuthor: " + BuildInfo.getAuthor() +
                     "\nBuilt on: " + BuildInfo.buildDate()

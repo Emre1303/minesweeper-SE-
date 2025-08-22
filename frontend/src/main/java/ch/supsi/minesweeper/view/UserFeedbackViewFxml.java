@@ -8,6 +8,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.text.Text;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -21,7 +23,14 @@ public class UserFeedbackViewFxml implements UncontrolledFxView {
     private GameModel gameModel;
     @FXML private ScrollPane containerPane;
     @FXML private Text       userFeedbackBar;
-    private UserFeedbackViewFxml(ResourceBundle bundle) { this.bundle = bundle; }
+    private boolean overrideActive = false;
+    private String  overrideMessage = null;
+    private final PauseTransition autoClear = new PauseTransition(Duration.seconds(3));
+
+    private UserFeedbackViewFxml(ResourceBundle bundle) {
+        this.bundle = bundle;
+        autoClear.setOnFinished(ev -> clearMessage());
+    }
 
     public static UserFeedbackViewFxml getInstance(ResourceBundle bundle) {
         if (myself == null) {
@@ -47,12 +56,38 @@ public class UserFeedbackViewFxml implements UncontrolledFxView {
 
     @Override public void initialize(AbstractModel model) {
         gameModel = (GameModel) model;
+
         update();
     }
     @Override public Node getNode() { return containerPane; }
 
+
+    public void showMessage(String message) {
+        overrideActive  = true;
+        overrideMessage = message;
+        userFeedbackBar.setText(message);
+        autoClear.playFromStart(); // dopo 3s torna a bombe rimanenti
+    }
+
+    public void showMessageSticky(String message) {
+        autoClear.stop();
+        overrideActive  = true;
+        overrideMessage = message;
+        userFeedbackBar.setText(message);
+    }
+
+    public void clearMessage() {
+        overrideActive  = false;
+        overrideMessage = null;
+        update();
+    }
+
     @Override
     public void update() {
+        if (overrideActive && overrideMessage != null) {
+            userFeedbackBar.setText(overrideMessage);
+            return;
+        }
         int total = gameModel.getMines();
         int flags = gameModel.getFlaggedCount();
         int remaining = total - flags;
