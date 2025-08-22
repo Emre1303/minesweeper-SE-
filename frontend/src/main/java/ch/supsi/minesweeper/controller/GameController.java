@@ -1,10 +1,9 @@
 package ch.supsi.minesweeper.controller;
 
-import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
-import ch.supsi.minesweeper.infrastructure.JsonGamePersistence;
-import ch.supsi.minesweeper.persistence.GamePersistence;
-import ch.supsi.minesweeper.model.PlayerEventHandler;
+import ch.supsi.minesweeper.persistence.JsonGameRepository;
+import ch.supsi.minesweeper.service.GameRepository;
+import ch.supsi.minesweeper.service.GameService;
 import ch.supsi.minesweeper.view.DataView;
 import ch.supsi.minesweeper.view.MenuBarViewFxml;
 import ch.supsi.minesweeper.util.AppPreferences;
@@ -13,7 +12,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.List;
@@ -24,7 +22,7 @@ public class GameController implements EventHandler {
 
     private static GameController myself;
     private final GameModel        gameModel;
-    private final GamePersistence   persistence;
+    private GameService gameService;
     private       List<DataView>    views;
     private final int               defaultBombs;
     private final ResourceBundle    bundle;
@@ -33,11 +31,14 @@ public class GameController implements EventHandler {
 
     private GameController() {
         this.gameModel    = GameModel.getInstance();
-        this.persistence  = new JsonGamePersistence();
         this.defaultBombs = AppPreferences.getBombs();
         this.bundle       = ResourceBundle.getBundle(
                 "i18n.messages",
                 Locale.forLanguageTag(AppPreferences.getLang()));
+    }
+
+    public void setGameService(GameService gameService) {
+        this.gameService = gameService;
     }
 
     public static GameController getInstance() {
@@ -61,7 +62,7 @@ public class GameController implements EventHandler {
             int bombs = Math.max(1, Math.min(defaultBombs, max));
 
             gameModel.setMines(bombs);
-            gameModel.newGame();
+            gameService.newGame();
             views.forEach(DataView::update);
 
             // riabilita Save e Save As su nuova partita
@@ -83,7 +84,7 @@ public class GameController implements EventHandler {
             return;
         }
         try {
-            persistence.save(gameModel, currentFile);
+            gameService.save(currentFile);
             views.forEach(DataView::update);
             Platform.runLater(() -> {
                 Alert info = new Alert(AlertType.INFORMATION,
@@ -91,7 +92,7 @@ public class GameController implements EventHandler {
                 info.setHeaderText(null);
                 info.showAndWait();
             });
-        } catch (IOException e) {
+        } catch (RuntimeException e) {
             e.printStackTrace();
             Platform.runLater(() -> {
                 Alert err = new Alert(AlertType.ERROR,
@@ -112,7 +113,7 @@ public class GameController implements EventHandler {
         if (file != null) {
             currentFile = file.toPath();
             try {
-                persistence.save(gameModel, currentFile);
+                gameService.save(currentFile);
                 views.forEach(DataView::update);
                 Platform.runLater(() -> {
                     Alert info = new Alert(AlertType.INFORMATION,
@@ -120,7 +121,7 @@ public class GameController implements EventHandler {
                     info.setHeaderText(null);
                     info.showAndWait();
                 });
-            } catch (IOException ex) {
+            } catch (RuntimeException ex) {
                 ex.printStackTrace();
                 Platform.runLater(() -> {
                     Alert err = new Alert(AlertType.ERROR,
@@ -140,7 +141,7 @@ public class GameController implements EventHandler {
             return;
         }
         try {
-            persistence.load(gameModel, currentFile);
+            gameService.load(currentFile);
             views.forEach(DataView::update);
             // Riabilita Save/Save As dopo aver caricato
             MenuBarViewFxml.getInstance().enableSaveOptions();
@@ -151,7 +152,7 @@ public class GameController implements EventHandler {
                 info.setHeaderText(null);
                 info.showAndWait();
             });
-        } catch (IOException ex) {
+        } catch (RuntimeException ex) {
             ex.printStackTrace();
             Platform.runLater(() -> {
                 Alert err = new Alert(AlertType.ERROR,
@@ -172,7 +173,7 @@ public class GameController implements EventHandler {
         if (file != null) {
             currentFile = file.toPath();
             try {
-                persistence.load(gameModel, currentFile);
+                gameService.load(currentFile);
                 views.forEach(DataView::update);
                 // Riabilita Save/Save As dopo aver caricato
                 MenuBarViewFxml.getInstance().enableSaveOptions();
@@ -183,7 +184,7 @@ public class GameController implements EventHandler {
                     info.setHeaderText(null);
                     info.showAndWait();
                 });
-            } catch (IOException ex) {
+            } catch (RuntimeException ex) {
                 ex.printStackTrace();
                 Platform.runLater(() -> {
                     Alert err = new Alert(AlertType.ERROR,

@@ -3,6 +3,10 @@ package ch.supsi.minesweeper;
 import ch.supsi.minesweeper.controller.EventHandler;
 import ch.supsi.minesweeper.controller.GameController;
 
+import ch.supsi.minesweeper.persistence.JsonGameRepository;
+import ch.supsi.minesweeper.service.DefaultGameService;
+import ch.supsi.minesweeper.service.GameService;
+
 import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.util.AppPreferences;
@@ -34,12 +38,16 @@ public class MainFx extends Application {
         bundle = ResourceBundle.getBundle(BUNDLE_BASE, locale);
 
         model          = GameModel.getInstance();
+        JsonGameRepository repo = new JsonGameRepository();
+        GameService gameService = new DefaultGameService((GameModel) model, repo);
 
         menuBarView    = MenuBarViewFxml.getInstance(bundle);
         gameBoardView  = GameBoardViewFxml.getInstance(bundle);
         feedbackView   = UserFeedbackViewFxml.getInstance(bundle);
 
         GameController controller = GameController.getInstance();
+
+        controller.setGameService(gameService);
 
         menuBarView.initialize((EventHandler) controller, model);
         gameBoardView.initialize((EventHandler) controller, model);
