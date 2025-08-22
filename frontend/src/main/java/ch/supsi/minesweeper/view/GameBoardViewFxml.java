@@ -87,12 +87,10 @@ public class GameBoardViewFxml implements ControlledFxView {
                 btn.setDisable(true);
             }
             else if (gameModel.isFlagged(row, col)) {
-                // se con bandiera
                 btn.setGraphic(makeIcon(flagImg));
                 btn.setDisable(false);
             }
             else {
-                // cella coperta e non flaggata
                 btn.setGraphic(null);
                 btn.setDisable(!gameModel.isStarted());
             }

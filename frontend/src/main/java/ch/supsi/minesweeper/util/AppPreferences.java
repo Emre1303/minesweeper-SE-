@@ -10,10 +10,8 @@ import java.util.Properties;
 
 public final class AppPreferences {
 
-    //config.properties dentro al JAR (backend/src/main/resources/config.properties)
     private static final String CLASSPATH_FILE = "/config.properties";
 
-    //in HOME dell’utente, in una cartella nascosta “.minesweeper”
     private static final Path USER_FILE = Paths.get(
             System.getProperty("user.home"),
             ".minesweeper",
@@ -69,7 +67,6 @@ public final class AppPreferences {
 
     private static void save() {
         try {
-            // se non esiste la cartella ~/.minesweeper, la creo
             Files.createDirectories(USER_FILE.getParent());
             try (OutputStream out = Files.newOutputStream(USER_FILE)) {
                 props.store(out, "Minesweeper preferences – cold reload");
