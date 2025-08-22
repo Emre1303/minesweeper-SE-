@@ -1,12 +1,9 @@
 package ch.supsi.minesweeper;
 
-import ch.supsi.minesweeper.controller.EventHandler;
 import ch.supsi.minesweeper.controller.GameController;
-
 import ch.supsi.minesweeper.persistence.JsonGameRepository;
 import ch.supsi.minesweeper.service.DefaultGameService;
 import ch.supsi.minesweeper.service.GameService;
-
 import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.util.AppPreferences;
@@ -24,7 +21,6 @@ public class MainFx extends Application {
 
     public static final String BUNDLE_BASE = "i18n.messages";
 
-    private final AbstractModel model;
     private final ControlledFxView menuBarView;
     private final ControlledFxView gameBoardView;
     private final UncontrolledFxView feedbackView;
@@ -37,7 +33,7 @@ public class MainFx extends Application {
         Locale locale = Locale.forLanguageTag(AppPreferences.getLang());
         bundle = ResourceBundle.getBundle(BUNDLE_BASE, locale);
 
-        model          = GameModel.getInstance();
+        AbstractModel model = GameModel.getInstance();
         JsonGameRepository repo = new JsonGameRepository();
         GameService gameService = new DefaultGameService((GameModel) model, repo);
 
@@ -50,8 +46,8 @@ public class MainFx extends Application {
         controller.setGameService(gameService);
         controller.attachMenuController(bundle, AppPreferences.getBombs());
 
-        menuBarView.initialize((EventHandler) controller, model);
-        gameBoardView.initialize((EventHandler) controller, model);
+        menuBarView.initialize( controller, model);
+        gameBoardView.initialize( controller, model);
         feedbackView.initialize(model);
 
         controller.initialize(List.of(menuBarView, gameBoardView, feedbackView));

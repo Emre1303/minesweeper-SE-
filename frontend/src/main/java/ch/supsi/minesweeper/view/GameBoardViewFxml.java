@@ -2,7 +2,6 @@ package ch.supsi.minesweeper.view;
 
 import ch.supsi.minesweeper.controller.EventHandler;
 import ch.supsi.minesweeper.model.AbstractModel;
-import ch.supsi.minesweeper.model.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.model.PlayerEventHandler;
 import javafx.fxml.FXML;
@@ -21,26 +20,24 @@ import java.util.*;
 public class GameBoardViewFxml implements ControlledFxView {
 
     private static GameBoardViewFxml myself;
-    private final ResourceBundle bundle;
     private static final double BUTTON_SIZE = 37;
     private static final double IMAGE_SIZE  = 30;
 
     private PlayerEventHandler playerEventHandler;
-    private GameEventHandler   gameEventHandler;
     private GameModel          gameModel;
 
     @FXML private GridPane containerPane;
     private final Map<Integer, Image> numberImages = new HashMap<>();
-    private Image flagImg, bombImg;
+    private Image flagImg;
+    private Image bombImg;
 
-    private GameBoardViewFxml(ResourceBundle bundle) {
-        this.bundle = bundle;
+    private GameBoardViewFxml() {
         loadImages();
     }
 
     public static GameBoardViewFxml getInstance(ResourceBundle bundle) {
         if (myself == null) {
-            myself = new GameBoardViewFxml(bundle);
+            myself = new GameBoardViewFxml();
             try {
                 URL url = GameBoardViewFxml.class.getResource("/gameboard.fxml");
                 FXMLLoader loader = new FXMLLoader(url, bundle);
@@ -55,8 +52,7 @@ public class GameBoardViewFxml implements ControlledFxView {
 
     @Override
     public void initialize(EventHandler evt, AbstractModel model) {
-        playerEventHandler = (PlayerEventHandler) evt;
-        gameEventHandler   = (GameEventHandler)   evt;
+        playerEventHandler = evt;
         gameModel          = (GameModel) model;
         setupGrid();
     }
@@ -107,11 +103,11 @@ public class GameBoardViewFxml implements ControlledFxView {
             int row = Optional.ofNullable(GridPane.getRowIndex(btn)).orElse(0);
             int col = Optional.ofNullable(GridPane.getColumnIndex(btn)).orElse(0);
             btn.addEventHandler(MouseEvent.MOUSE_CLICKED,
-                    e -> handleClick(e, row, col, btn));
+                    e -> handleClick(e, row, col));
         }
     }
 
-    private void handleClick(MouseEvent e, int r, int c, Button btn) {
+    private void handleClick(MouseEvent e, int r, int c) {
         if (!gameModel.isStarted()) return;
 
         if (e.getButton() == MouseButton.SECONDARY) {
@@ -123,7 +119,6 @@ public class GameBoardViewFxml implements ControlledFxView {
     }
 
 
-
     private void loadImages() {
         for (int i = 1; i <= 8; i++) {
             numberImages.put(i, new Image(getClass().getResourceAsStream("/images/" + i + ".png")));
@@ -132,17 +127,6 @@ public class GameBoardViewFxml implements ControlledFxView {
         bombImg = new Image(getClass().getResourceAsStream("/images/bomb.png"));
     }
 
-    private Button getButtonAt(int row, int col) {
-        for (Node n : containerPane.getChildren()) {
-            Button b = (Button) n;
-            Integer r = GridPane.getRowIndex(b);
-            Integer c = GridPane.getColumnIndex(b);
-            if (Objects.equals(r, row) && Objects.equals(c, col)) {
-                return b;
-            }
-        }
-        throw new IllegalStateException("Button non trovato (" + row + "," + col + ")");
-    }
 
     private ImageView makeIcon(Image img) {
         ImageView iv = new ImageView(img);
