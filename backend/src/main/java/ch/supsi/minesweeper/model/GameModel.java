@@ -58,45 +58,7 @@ public class GameModel extends AbstractModel
     }
 
 
-    private void generateField() {
-        // reset
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                hasMine[r][c]       = false;
-                neighborCount[r][c] = 0;
-                revealed[r][c]      = false;
-                flagged[r][c]       = false;
-            }
-        }
-        //  piazza mine
-        Random rnd = new Random();
-        int placed = 0;
-        while (placed < mines) {
-            int r = rnd.nextInt(rows);
-            int c = rnd.nextInt(cols);
-            if (!hasMine[r][c]) {
-                hasMine[r][c] = true;
-                placed++;
-            }
-        }
-        // calcola bombe adiacenti
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (hasMine[r][c]) continue;
-                int cnt = 0;
-                for (int dr = -1; dr <= 1; dr++) {
-                    for (int dc = -1; dc <= 1; dc++) {
-                        if (dr == 0 && dc == 0) continue;
-                        int nr = r + dr, nc = c + dc;
-                        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && hasMine[nr][nc]) {
-                            cnt++;
-                        }
-                    }
-                }
-                neighborCount[r][c] = cnt;
-            }
-        }
-    }
+
     public List<int[]> revealArea(int r, int c) {
         return AreaRevealer.revealArea(g, r, c);
     }
