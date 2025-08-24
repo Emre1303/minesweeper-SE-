@@ -110,14 +110,11 @@ public class MenuBarViewFxml implements ControlledFxView {
 
         // Esci
         quitMenuItem.setOnAction(e -> {
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                    bundle.getString("quit.ask"));
-            confirm.setHeaderText(null);
-            confirm.setTitle(bundle.getString("quit.title"));
-            confirm.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-
-            confirm.showAndWait().filter(bt -> bt == ButtonType.YES)
-                    .ifPresent(bt -> Platform.exit());
+            UiDialogs.confirm(
+                    bundle.getString("quit.title"),
+                    bundle.getString("quit.ask"),
+                    () -> Platform.exit()
+            );
         });
 
         // all’avvio (prima di creare una partita), disabilitiamo “Save” e “Save As”

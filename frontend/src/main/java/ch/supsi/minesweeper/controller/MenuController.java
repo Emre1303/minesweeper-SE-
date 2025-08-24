@@ -4,10 +4,9 @@ import ch.supsi.minesweeper.service.GameService;
 import ch.supsi.minesweeper.util.BuildInfo;
 import ch.supsi.minesweeper.view.DataView;
 import ch.supsi.minesweeper.view.MenuBarViewFxml;
+import ch.supsi.minesweeper.view.UiDialogs;
 import ch.supsi.minesweeper.view.UserFeedbackViewFxml;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -117,36 +116,33 @@ class MenuController {
 
     void about() {
         Platform.runLater(() -> {
-            Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle("About " + BuildInfo.getName());
-            a.setHeaderText(BuildInfo.getName() + "  |  Versione: " + BuildInfo.getVersion());
-            a.setContentText(BuildInfo.getDescription() +
-                    "\nAuthor: " + BuildInfo.getAuthor() +
-                    "\nBuilt on: " + BuildInfo.buildDate()
+            UiDialogs.about(
+                    BuildInfo.getName(),
+                    BuildInfo.getVersion(),
+                    BuildInfo.getDescription(),
+                    BuildInfo.getAuthor(),
+                    BuildInfo.buildDate()
             );
-            a.showAndWait();
         });
     }
 
     void win() {
         Platform.runLater(() -> {
             MenuBarViewFxml.getInstance().disableSaveOptions();
-            Alert a = new Alert(AlertType.INFORMATION);
-            a.setTitle(rb().getString("alert.win.title"));
-            a.setHeaderText(null);
-            a.setContentText(rb().getString("alert.win.text"));
-            a.showAndWait();
+            UiDialogs.info(
+                    rb().getString("alert.win.title"),
+                    rb().getString("alert.win.text")
+            );
         });
     }
 
     void lose() {
         Platform.runLater(() -> {
             MenuBarViewFxml.getInstance().disableSaveOptions();
-            Alert a = new Alert(AlertType.ERROR);
-            a.setTitle(rb().getString("alert.lose.title"));
-            a.setHeaderText(rb().getString("alert.lose.header"));
-            a.setContentText(rb().getString("alert.lose.text"));
-            a.showAndWait();
+            UiDialogs.error(
+                    rb().getString("alert.lose.title"),
+                    rb().getString("alert.lose.text")
+            );
         });
     }
 }
