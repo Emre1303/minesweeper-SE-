@@ -1,15 +1,16 @@
 package ch.supsi.minesweeper.model;
 
-import java.util.*;
 
-public class GameModel extends AbstractModel
-        implements GameEventHandler, PlayerEventHandler {
+public class GameModel extends AbstractModel {
 
     private static GameModel myself;
+
     private final int rows  = 9;
     private final int cols  = 9;
-    private int mines = 10;
+
+    private int  mines   = 10;
     private boolean started = false;
+
     private final Grid g;
 
     private GameModel() {
@@ -25,9 +26,25 @@ public class GameModel extends AbstractModel
         return myself;
     }
 
-    public int getRows()     { return rows; }
-    public int getCols()     { return cols; }
-    public int getMines()    { return mines; }
+
+    public int getRows()  { return rows; }
+    public int getCols()  { return cols; }
+    public int getMines() { return mines; }
+
+    public boolean isStarted() { return started; }
+
+    public boolean isRevealed(int r, int c)     { return g.revealed[r][c]; }
+    public boolean isFlagged(int r, int c)      { return g.flagged[r][c]; }
+    public boolean hasMineAt(int r, int c)      { return g.hasMine[r][c]; }
+    public int  getNeighborCountAt(int r, int c){ return g.neighborCount[r][c]; }
+
+    public int getFlaggedCount() {
+        return g.getFlaggedCount();
+    }
+
+    public int getRevealedCount() { return g.revealedCount; }
+
+
 
     public void setMines(int mines) {
         if (mines < 1 || mines >= rows * cols) {
@@ -36,84 +53,29 @@ public class GameModel extends AbstractModel
         this.mines = mines;
     }
 
-    public boolean isStarted()            { return started; }
-    public boolean isRevealed(int r, int c) { return g.revealed[r][c]; }
-    public boolean hasMineAt(int r, int c)  { return g.hasMine[r][c]; }
-    public boolean isFlagged(int r, int c)  { return g.flagged[r][c]; }
-    public int getNeighborCountAt(int r, int c) { return g.neighborCount[r][c]; }
-    public int getFlaggedCount() { return g.getFlaggedCount(); }
+    public void setStarted(boolean started) { this.started = started; }
 
-   /* private void initField() {
-        hasMine       = new boolean[rows][cols];
-        neighborCount = new int[rows][cols];
-        revealed      = new boolean[rows][cols];
-        flagged       = new boolean[rows][cols];
-        revealedCount = 0;
-    }*/
-
-    @Override
-    public void newGame() {
-        FieldGenerator.generate(g, mines);
-        started = true;
+    public void clearGrid() {
+        g.clear();
+        g.revealedCount = 0;
     }
 
-
-
-    public List<int[]> revealArea(int r, int c) {
-        return AreaRevealer.revealArea(g, r, c);
+    public void setHasMineAt(int r, int c, boolean v)     { g.hasMine[r][c] = v; }
+    public void setNeighborCountAt(int r, int c, int v)   { g.neighborCount[r][c] = v; }
+    public void setRevealedAt(int r, int c, boolean v)    { g.revealed[r][c] = v; }
+    public void setFlagAt(int r, int c, boolean v) {
+        if (!g.revealed[r][c]) { g.flagged[r][c] = v; }
     }
+    public void incrementRevealedCount(int delta)         { g.revealedCount += delta; }
+    public void setRevealedCount(int value)               { g.revealedCount = value; }
 
-
-    public void toggleFlag(int r, int c) {
-        if (!g.revealed[r][c]) {
-            g.flagged[r][c] = !g.flagged[r][c];
-        }
-    }
-
-    public boolean isWin() {
-        return g.revealedCount == (rows * cols - mines);
-    }
 
     public void loadFromState(GameStateJson state) {
         this.mines = state.getMines();
         StateLoader.load(g, state);
     }
 
-    public void markStarted() {
-        this.started = true;
-    }
+    public void markStarted() { this.started = true; }
 
-    @Override
-    public void move() {
-    }
 
-    @Override
-    public void save() {
-        throw new UnsupportedOperationException(
-                "Usa JsonGamePersistence o un altro GamePersistence per salvare."
-        );
-    }
-
-    @Override
-    public void load() {
-        throw new UnsupportedOperationException(
-                "Usa JsonGamePersistence o un altro GamePersistence per caricare."
-        );
-    }
-
-    @Override
-    public void help() {
-    }
-
-    @Override
-    public void about() {
-    }
-
-    @Override
-    public void win() {
-    }
-
-    @Override
-    public void lose() {
-    }
 }

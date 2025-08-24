@@ -12,7 +12,7 @@ public interface GameService {
     void save(Path path);
     void load(Path path);
 
-
+    void setMines(int mines);
     int getRows();
     int getCols();
     int getMines();
@@ -21,4 +21,7 @@ public interface GameService {
     boolean hasMineAt(int r, int c);
     int getNeighborCountAt(int r, int c);
     int getFlaggedCount();
+    List<int[]> revealAllMines();
+    boolean isStarted();
+    void endGame();
 }

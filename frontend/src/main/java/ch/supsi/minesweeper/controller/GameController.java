@@ -21,24 +21,17 @@ public class GameController implements EventHandler {
     public void reveal(int r, int c) {
         gameService.revealArea(r, c);
 
-        if (views != null) views.forEach(DataView::update);
-
         if (gameService.hasMineAt(r, c)) {
             gameService.revealAllMines();
             if (views != null) views.forEach(DataView::update);
-
-            gameService.endGame();
             lose();
-            if (views != null) views.forEach(DataView::update);
-
-        } else if (gameService.isWin()) {
             gameService.endGame();
-            if (views != null) views.forEach(DataView::update);
-
+        } else if (gameService.isWin()) {
             win();
-
+            gameService.endGame();
         }
 
+        if (views != null) views.forEach(DataView::update);
     }
     @Override
     public void toggleFlag(int r, int c) {

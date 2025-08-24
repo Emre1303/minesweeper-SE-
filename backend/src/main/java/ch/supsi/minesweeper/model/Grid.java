@@ -24,7 +24,6 @@ final class Grid {
         }
         revealedCount = 0;
     }
-    //Ritorna true se il punto si trova all'interno del griglia
     boolean inBounds(int r,int c){ return r >= 0 && r < rows && c >= 0 && c < cols; }
 
     int getFlaggedCount(){ int cnt=0; for(int r=0;r<rows;r++) for(int c=0;c<cols;c++) if(flagged[r][c]) cnt++; return cnt; }
