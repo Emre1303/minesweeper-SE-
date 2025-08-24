@@ -44,6 +44,9 @@ class MenuController {
 
             gameService.setMines(bombs);
             gameService.newGame();
+
+            UserFeedbackViewFxml.getInstance().clearMessage();
+
             if (views != null) views.forEach(DataView::update);
 
             MenuBarViewFxml.getInstance().enableSaveOptions();
@@ -129,9 +132,8 @@ class MenuController {
     void win() {
         Platform.runLater(() -> {
             MenuBarViewFxml.getInstance().disableSaveOptions();
-            UiDialogs.info(
-                    rb().getString("alert.win.title"),
-                    rb().getString("alert.win.text")
+            UserFeedbackViewFxml.getInstance().showMessageSticky(
+                    rb().getString("alert.win.title") + "\n" + rb().getString("alert.win.text")
             );
         });
     }
@@ -139,9 +141,10 @@ class MenuController {
     void lose() {
         Platform.runLater(() -> {
             MenuBarViewFxml.getInstance().disableSaveOptions();
-            UiDialogs.error(
-                    rb().getString("alert.lose.title"),
-                    rb().getString("alert.lose.text")
+            UserFeedbackViewFxml.getInstance().showMessageSticky(
+                    rb().getString("alert.lose.title") + ": " +
+                            rb().getString("alert.lose.header") + " — " +
+                            rb().getString("alert.lose.text")
             );
         });
     }
