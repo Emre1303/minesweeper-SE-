@@ -1,7 +1,6 @@
 package ch.supsi.minesweeper.controller;
 
 import ch.supsi.minesweeper.service.GameService;
-import ch.supsi.minesweeper.util.BuildInfo;
 import ch.supsi.minesweeper.view.DataView;
 import ch.supsi.minesweeper.view.MenuBarViewFxml;
 import ch.supsi.minesweeper.view.UiDialogs;
@@ -13,10 +12,12 @@ import java.io.File;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 class MenuController {
 
+    private final ResourceBundle aboutProps = ResourceBundle.getBundle("config");
     private final GameService gameService;
     private final ResourceBundle bundle;
     private final int defaultBombs;
@@ -118,13 +119,15 @@ class MenuController {
     }
 
     void about() {
+        String name        = getProp("app.name", "MineSweeper SE");
+        String version     = getProp("app.version", "1.0");
+        String description = getProp("app.description", "MineSweeper SE Project");
+        String author      = getProp("app.author", "Authors");
+        String buildDate   = getProp("app.buildDate", "unknown");
         Platform.runLater(() -> {
+
             UiDialogs.about(
-                    BuildInfo.getName(),
-                    BuildInfo.getVersion(),
-                    BuildInfo.getDescription(),
-                    BuildInfo.getAuthor(),
-                    BuildInfo.buildDate()
+                    name, version, description, author, buildDate
             );
         });
     }
@@ -147,5 +150,10 @@ class MenuController {
                             rb().getString("alert.lose.text")
             );
         });
+    }
+    private String getProp(String key, String defVal) {
+
+        try { return aboutProps.getString(key); }
+        catch (MissingResourceException e) { return defVal; }
     }
 }
