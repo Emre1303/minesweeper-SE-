@@ -2,7 +2,7 @@ package ch.supsi.minesweeper.view;
 
 import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameModel;
-import ch.supsi.minesweeper.util.AppPreferences;
+import ch.supsi.minesweeper.service.DefaultPreferenceService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -50,7 +50,7 @@ public class UserFeedbackViewFxml implements UncontrolledFxView {
     public static UserFeedbackViewFxml getInstance() {
         ResourceBundle def = ResourceBundle.getBundle(
                 "i18n.messages",
-                Locale.forLanguageTag(AppPreferences.getLang()));
+                Locale.forLanguageTag(DefaultPreferenceService.getInstance().getLang()));
         return getInstance(def);
     }
 

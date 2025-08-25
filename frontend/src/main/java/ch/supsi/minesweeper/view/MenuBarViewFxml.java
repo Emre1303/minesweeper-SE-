@@ -4,7 +4,8 @@ import ch.supsi.minesweeper.controller.GameController;
 import ch.supsi.minesweeper.controller.EventHandler;
 import ch.supsi.minesweeper.controller.GameEventHandler;
 import ch.supsi.minesweeper.model.GameModel;
-import ch.supsi.minesweeper.util.AppPreferences;
+import ch.supsi.minesweeper.service.DefaultPreferenceService;
+import ch.supsi.minesweeper.service.PreferenceService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -37,7 +38,6 @@ public class MenuBarViewFxml implements ControlledFxView {
     private static MenuBarViewFxml myself;
     private GameEventHandler gameEventHandler;
     private GameModel        gameModel;
-
     private MenuBarViewFxml(ResourceBundle bundle) {
         this.bundle = bundle;
     }
@@ -60,7 +60,7 @@ public class MenuBarViewFxml implements ControlledFxView {
     public static MenuBarViewFxml getInstance() {
         ResourceBundle def = ResourceBundle.getBundle(
                 "i18n.messages",
-                Locale.forLanguageTag(AppPreferences.getLang()));
+                Locale.forLanguageTag(DefaultPreferenceService.getInstance().getLang()));
         return getInstance(def);
     }
 
@@ -122,8 +122,8 @@ public class MenuBarViewFxml implements ControlledFxView {
     }
 
     private void showPreferencesDialog() {
-        int    currentBombs = AppPreferences.getBombs();
-        String currentLang  = AppPreferences.getLang();
+        int    currentBombs = DefaultPreferenceService.getInstance().getBombs();
+        String currentLang  = DefaultPreferenceService.getInstance().getLang();
         int maxBombs = gameModel.getRows() * gameModel.getCols() - 1;
 
         Dialog<ButtonType> dlg = new Dialog<>();
@@ -152,8 +152,8 @@ public class MenuBarViewFxml implements ControlledFxView {
                 int bombs = Integer.parseInt(bombsField.getText().trim());
                 if (bombs < 1 || bombs > maxBombs) throw new NumberFormatException();
 
-                AppPreferences.setBombs(bombs);
-                AppPreferences.setLang(langBox.getValue());
+                DefaultPreferenceService.getInstance().setBombs(bombs);
+                DefaultPreferenceService.getInstance().setLang(langBox.getValue());
 
                 new Alert(Alert.AlertType.INFORMATION,
                         bundle.getString("prefs.saved"))

@@ -2,7 +2,6 @@ package ch.supsi.minesweeper.persistence;
 
 import ch.supsi.minesweeper.model.GameModel;
 import ch.supsi.minesweeper.model.GameStateJson;
-import ch.supsi.minesweeper.service.GameRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;

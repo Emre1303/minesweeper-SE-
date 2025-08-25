@@ -1,6 +1,7 @@
 package ch.supsi.minesweeper.service;
 
 import ch.supsi.minesweeper.model.GameModel;
+import ch.supsi.minesweeper.persistence.GameRepository;
 
 import java.nio.file.Path;
 import java.util.ArrayDeque;

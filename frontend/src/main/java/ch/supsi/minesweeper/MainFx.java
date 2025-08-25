@@ -4,9 +4,9 @@ import ch.supsi.minesweeper.controller.GameController;
 import ch.supsi.minesweeper.persistence.JsonGameRepository;
 import ch.supsi.minesweeper.service.DefaultGameService;
 import ch.supsi.minesweeper.service.GameService;
+import ch.supsi.minesweeper.service.DefaultPreferenceService;
 import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameModel;
-import ch.supsi.minesweeper.util.AppPreferences;
 import ch.supsi.minesweeper.view.*;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -30,7 +30,7 @@ public class MainFx extends Application {
     public MainFx() {
 
 
-        Locale locale = Locale.forLanguageTag(AppPreferences.getLang());
+        Locale locale = Locale.forLanguageTag(DefaultPreferenceService.getInstance().getLang());
         bundle = ResourceBundle.getBundle(BUNDLE_BASE, locale);
 
         AbstractModel model = GameModel.getInstance();
@@ -44,8 +44,8 @@ public class MainFx extends Application {
         GameController controller = GameController.getInstance();
 
         controller.setGameService(gameService);
-        controller.attachMenuController(bundle, AppPreferences.getBombs());
-
+        controller.attachMenuController(bundle, DefaultPreferenceService.getInstance().getBombs());
+        
         menuBarView.initialize( controller, model);
         gameBoardView.initialize( controller, model);
         feedbackView.initialize(model);
