@@ -19,7 +19,7 @@ public final class UiDialogs {
         });
     }
 
-    public static void error(String title, String content) {
+    /*public static void error(String title, String content) {
         Platform.runLater(() -> {
             Alert a = new Alert(Alert.AlertType.ERROR);
             a.setTitle(title);
@@ -27,7 +27,7 @@ public final class UiDialogs {
             a.setContentText(content);
             a.showAndWait();
         });
-    }
+    }*/ //Non usato
 
     public static void about(String appName, String version, String description, String author, String builtOn) {
         Platform.runLater(() -> {

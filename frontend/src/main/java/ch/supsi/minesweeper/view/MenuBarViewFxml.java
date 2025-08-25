@@ -3,14 +3,12 @@ package ch.supsi.minesweeper.view;
 import ch.supsi.minesweeper.controller.GameController;
 import ch.supsi.minesweeper.controller.EventHandler;
 import ch.supsi.minesweeper.controller.GameEventHandler;
-import ch.supsi.minesweeper.model.GameModel;
+import ch.supsi.minesweeper.uimodel.GameUiModel;
 import ch.supsi.minesweeper.service.DefaultPreferenceService;
-import ch.supsi.minesweeper.service.PreferenceService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuBar;
@@ -34,10 +32,10 @@ public class MenuBarViewFxml implements ControlledFxView {
     @FXML private MenuItem helpMenuItem;
     @FXML private MenuItem aboutMenuItem;
 
-    private final ResourceBundle bundle;
+    private final ResourceBundle   bundle;
     private static MenuBarViewFxml myself;
-    private GameEventHandler gameEventHandler;
-    private GameModel        gameModel;
+    private GameEventHandler       gameEventHandler;
+    private GameUiModel            game;
     private MenuBarViewFxml(ResourceBundle bundle) {
         this.bundle = bundle;
     }
@@ -67,7 +65,7 @@ public class MenuBarViewFxml implements ControlledFxView {
     @Override
     public void initialize(EventHandler h, ch.supsi.minesweeper.model.AbstractModel m) {
         this.gameEventHandler = (GameEventHandler) h;
-        this.gameModel        = (GameModel) m;
+        this.game        = (GameUiModel) m;
         createBehaviour();
     }
 
@@ -124,7 +122,7 @@ public class MenuBarViewFxml implements ControlledFxView {
     private void showPreferencesDialog() {
         int    currentBombs = DefaultPreferenceService.getInstance().getBombs();
         String currentLang  = DefaultPreferenceService.getInstance().getLang();
-        int maxBombs = gameModel.getRows() * gameModel.getCols() - 1;
+        int maxBombs = game.getRows() * game.getCols() - 1;
 
         Dialog<ButtonType> dlg = new Dialog<>();
         dlg.setTitle(bundle.getString("menu.preferences"));
@@ -155,13 +153,10 @@ public class MenuBarViewFxml implements ControlledFxView {
                 DefaultPreferenceService.getInstance().setBombs(bombs);
                 DefaultPreferenceService.getInstance().setLang(langBox.getValue());
 
-                new Alert(Alert.AlertType.INFORMATION,
-                        bundle.getString("prefs.saved"))
-                        .showAndWait();
+                UserFeedbackViewFxml.getInstance().showMessage(bundle.getString("prefs.saved"));
             } catch (NumberFormatException ex) {
-                new Alert(Alert.AlertType.ERROR,
-                        bundle.getString("prefs.error") + " 1–" + maxBombs + ".")
-                        .showAndWait();
+                UserFeedbackViewFxml.getInstance()
+                        .showMessageSticky(bundle.getString("prefs.error") + " 1–" + maxBombs + ".");
             }
         });
     }

@@ -2,7 +2,7 @@ package ch.supsi.minesweeper.view;
 
 import ch.supsi.minesweeper.controller.EventHandler;
 import ch.supsi.minesweeper.model.AbstractModel;
-import ch.supsi.minesweeper.model.GameModel;
+import ch.supsi.minesweeper.uimodel.GameUiModel;
 import ch.supsi.minesweeper.controller.PlayerEventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -24,7 +24,7 @@ public class GameBoardViewFxml implements ControlledFxView {
     private static final double IMAGE_SIZE  = 30;
 
     private PlayerEventHandler playerEventHandler;
-    private GameModel          gameModel;
+    private GameUiModel game;
 
     @FXML private GridPane containerPane;
     private final Map<Integer, Image> numberImages = new HashMap<>();
@@ -53,7 +53,7 @@ public class GameBoardViewFxml implements ControlledFxView {
     @Override
     public void initialize(EventHandler evt, AbstractModel model) {
         playerEventHandler = evt;
-        gameModel          = (GameModel) model;
+        game = (GameUiModel) model;
         setupGrid();
     }
 
@@ -69,11 +69,11 @@ public class GameBoardViewFxml implements ControlledFxView {
             int row = Optional.ofNullable(GridPane.getRowIndex(btn)).orElse(0);
             int col = Optional.ofNullable(GridPane.getColumnIndex(btn)).orElse(0);
 
-            if (gameModel.isRevealed(row, col)) {
-                if (gameModel.hasMineAt(row, col)) {
+            if (game.isRevealed(row, col)) {
+                if (game.hasMineAt(row, col)) {
                     btn.setGraphic(makeIcon(bombImg));
                 } else {
-                    int cnt = gameModel.getNeighborCountAt(row, col);
+                    int cnt = game.getNeighborCountAt(row, col);
                     if (cnt > 0) {
                         btn.setGraphic(makeIcon(numberImages.get(cnt)));
                     } else {
@@ -82,13 +82,13 @@ public class GameBoardViewFxml implements ControlledFxView {
                 }
                 btn.setDisable(true);
             }
-            else if (gameModel.isFlagged(row, col)) {
+            else if (game.isFlagged(row, col)) {
                 btn.setGraphic(makeIcon(flagImg));
                 btn.setDisable(false);
             }
             else {
                 btn.setGraphic(null);
-                btn.setDisable(!gameModel.isStarted());
+                btn.setDisable(!game.isStarted());
             }
         }
     }
@@ -108,11 +108,11 @@ public class GameBoardViewFxml implements ControlledFxView {
     }
 
     private void handleClick(MouseEvent e, int r, int c) {
-        if (!gameModel.isStarted()) return;
+        if (!game.isStarted()) return;
 
         if (e.getButton() == MouseButton.SECONDARY) {
             playerEventHandler.toggleFlag(r, c);
-        } else if (e.getButton() == MouseButton.PRIMARY && !gameModel.isFlagged(r, c)) {
+        } else if (e.getButton() == MouseButton.PRIMARY && !game.isFlagged(r, c)) {
             playerEventHandler.reveal(r, c);
         }
         e.consume();

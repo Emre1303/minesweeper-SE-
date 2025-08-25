@@ -1,7 +1,7 @@
 package ch.supsi.minesweeper.view;
 
 import ch.supsi.minesweeper.model.AbstractModel;
-import ch.supsi.minesweeper.model.GameModel;
+import ch.supsi.minesweeper.uimodel.GameUiModel;
 import ch.supsi.minesweeper.service.DefaultPreferenceService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,7 +20,7 @@ public class UserFeedbackViewFxml implements UncontrolledFxView {
 
     private static UserFeedbackViewFxml myself;
     private final ResourceBundle bundle;
-    private GameModel gameModel;
+    private GameUiModel game;
     @FXML private ScrollPane containerPane;
     @FXML private Text       userFeedbackBar;
     private boolean overrideActive = false;
@@ -55,7 +55,7 @@ public class UserFeedbackViewFxml implements UncontrolledFxView {
     }
 
     @Override public void initialize(AbstractModel model) {
-        gameModel = (GameModel) model;
+        game = (GameUiModel) model;
 
         update();
     }
@@ -88,8 +88,8 @@ public class UserFeedbackViewFxml implements UncontrolledFxView {
             userFeedbackBar.setText(overrideMessage);
             return;
         }
-        int total = gameModel.getMines();
-        int flags = gameModel.getFlaggedCount();
+        int total = game.getMines();
+        int flags = game.getFlaggedCount();
         int remaining = total - flags;
         String fmt = bundle.getString("status.bombs");
         userFeedbackBar.setText(java.text.MessageFormat.format(fmt, remaining, total));

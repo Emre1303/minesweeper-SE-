@@ -7,11 +7,14 @@ import ch.supsi.minesweeper.service.GameService;
 import ch.supsi.minesweeper.service.DefaultPreferenceService;
 import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameModel;
+import ch.supsi.minesweeper.uimodel.GameUiModel;
 import ch.supsi.minesweeper.view.*;
+import ch.supsi.minesweeper.view.UiDialogs;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import javafx.application.Platform;
 
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +40,8 @@ public class MainFx extends Application {
         JsonGameRepository repo = new JsonGameRepository();
         GameService gameService = new DefaultGameService((GameModel) model, repo);
 
+        AbstractModel uiModel = new GameUiModel(gameService);
+
         menuBarView    = MenuBarViewFxml.getInstance(bundle);
         gameBoardView  = GameBoardViewFxml.getInstance(bundle);
         feedbackView   = UserFeedbackViewFxml.getInstance(bundle);
@@ -46,9 +51,9 @@ public class MainFx extends Application {
         controller.setGameService(gameService);
         controller.attachMenuController(bundle, DefaultPreferenceService.getInstance().getBombs());
         
-        menuBarView.initialize( controller, model);
-        gameBoardView.initialize( controller, model);
-        feedbackView.initialize(model);
+        menuBarView.initialize( controller, uiModel);
+        gameBoardView.initialize( controller, uiModel);
+        feedbackView.initialize(uiModel);
 
         controller.initialize(List.of(menuBarView, gameBoardView, feedbackView));
     }
@@ -66,6 +71,14 @@ public class MainFx extends Application {
         stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
+        stage.setOnCloseRequest(evt -> {
+            evt.consume();
+            UiDialogs.confirm(
+                    bundle.getString("quit.title"),
+                    bundle.getString("quit.ask"),
+                    () -> Platform.exit()
+            );
+        });
     }
 
     public static void main(String[] args) { launch(args); }

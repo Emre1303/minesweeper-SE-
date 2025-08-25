@@ -38,5 +38,4 @@ public class DefaultPreferenceService implements PreferenceService {
         repo.save(cache);
     }
 
-    @Override public void reload() { this.cache = repo.load(); }
 }

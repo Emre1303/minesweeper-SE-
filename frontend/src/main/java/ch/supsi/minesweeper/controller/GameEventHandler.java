@@ -3,7 +3,7 @@ package ch.supsi.minesweeper.controller;
 public interface GameEventHandler{
     void newGame();
     void save();
-    void load();     // ← deve esserci
+    void load();
     void help();
     void about();
     void win();

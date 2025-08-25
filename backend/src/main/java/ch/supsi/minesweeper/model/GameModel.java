@@ -7,7 +7,6 @@ public class GameModel extends AbstractModel {
 
     private final int rows  = 9;
     private final int cols  = 9;
-
     private int  mines   = 10;
     private boolean started = false;
 

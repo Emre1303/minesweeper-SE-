@@ -5,5 +5,4 @@ public interface PreferenceService {
     void setBombs(int bombs);
     String getLang();
     void setLang(String lang);
-    void reload();
 }
