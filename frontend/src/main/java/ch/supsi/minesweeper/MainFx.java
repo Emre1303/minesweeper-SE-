@@ -71,13 +71,10 @@ public class MainFx extends Application {
         stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
+        GameController controller = GameController.getInstance();
         stage.setOnCloseRequest(evt -> {
             evt.consume();
-            UiDialogs.confirm(
-                    bundle.getString("quit.title"),
-                    bundle.getString("quit.ask"),
-                    () -> Platform.exit()
-            );
+            controller.quit();
         });
     }
 

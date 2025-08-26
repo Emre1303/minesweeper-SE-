@@ -21,6 +21,8 @@ public class GameController implements EventHandler {
     public void reveal(int r, int c) {
         gameService.revealArea(r, c);
 
+        menu.userDidSomething();
+
         if (gameService.hasMineAt(r, c)) {
             gameService.revealAllMines();
             if (views != null) views.forEach(DataView::update);
@@ -36,6 +38,9 @@ public class GameController implements EventHandler {
     @Override
     public void toggleFlag(int r, int c) {
         gameService.toggleFlag(r, c);
+
+        menu.userDidSomething();
+
         if (views != null) views.forEach(DataView::update);
     }
 
@@ -62,14 +67,16 @@ public class GameController implements EventHandler {
 
     @Override public void move() {}
 
-    @Override public void newGame()      { menu.newGame(); }
-    @Override public void save()         { menu.save(); }
-    public  void saveAs()                { menu.saveAs(); }
-    @Override public void load()         { menu.load(); }
-    public  void open()                  { menu.open(); }
-    @Override public void help()         { menu.help(); }
-    @Override public void about()        { menu.about(); }
-    @Override public void win()          { menu.win(); }
-    @Override public void lose()         { menu.lose(); }
+    @Override public void newGame()         { menu.newGame(); }
+    @Override public void save()            { menu.save(); }
+    public  void saveAs()                   { menu.saveAs(); }
+    @Override public void load()            { menu.load(); }
+    public  void open()                     { menu.open(); }
+    @Override public void help()            { menu.help(); }
+    @Override public void about()           { menu.about(); }
+    @Override public void win()             { menu.win(); }
+    @Override public void lose()            { menu.lose(); }
+    @Override public void quit()            { menu.quit(); }
+    @Override public void userDidSomething(){ menu.userDidSomething(); }
 
 }

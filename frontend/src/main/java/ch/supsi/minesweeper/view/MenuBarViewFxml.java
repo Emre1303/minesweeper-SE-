@@ -100,20 +100,25 @@ public class MenuBarViewFxml implements ControlledFxView {
         saveAsMenuItem.setOnAction(e -> ((GameController) gameEventHandler).saveAs());
 
         // Help e About
-        helpMenuItem.setOnAction(e -> gameEventHandler.help());
-        aboutMenuItem.setOnAction(e -> gameEventHandler.about());
+        helpMenuItem.setOnAction(e -> {
+            gameEventHandler.userDidSomething();
+            gameEventHandler.help();
+        });
+        aboutMenuItem.setOnAction(e -> {
+            gameEventHandler.userDidSomething();
+            gameEventHandler.about();
+        });
 
         // Preferenze
-        preferencesMenuItem.setOnAction(e -> showPreferencesDialog());
+        preferencesMenuItem.setOnAction(e -> {
+            gameEventHandler.userDidSomething();
+            showPreferencesDialog();
+        });
 
         // Esci
-        quitMenuItem.setOnAction(e -> {
-            UiDialogs.confirm(
-                    bundle.getString("quit.title"),
-                    bundle.getString("quit.ask"),
-                    () -> Platform.exit()
-            );
-        });
+        quitMenuItem.setOnAction(e -> gameEventHandler.quit()
+
+        );
 
         // all’avvio (prima di creare una partita), disabilitiamo “Save” e “Save As”
         disableSaveOptions();

@@ -8,4 +8,6 @@ public interface GameEventHandler{
     void about();
     void win();
     void lose();
+    void quit();
+    void userDidSomething();
 }

@@ -22,6 +22,8 @@ class MenuController {
     private final ResourceBundle bundle;
     private final int defaultBombs;
 
+    private boolean quitArmed = false;
+
     private List<DataView> views;
     private Path currentFile;
 
@@ -46,6 +48,8 @@ class MenuController {
             gameService.setMines(bombs);
             gameService.newGame();
 
+            resetQuitArmed();
+
             UserFeedbackViewFxml.getInstance().clearMessage();
 
             if (views != null) views.forEach(DataView::update);
@@ -65,6 +69,7 @@ class MenuController {
             Platform.runLater(() -> {
                 UserFeedbackViewFxml.getInstance().showMessage(rb().getString("dialog.save.success"));
             });
+            resetQuitArmed();
         } catch (RuntimeException e) {
             e.printStackTrace();
             Platform.runLater(() -> {
@@ -90,6 +95,7 @@ class MenuController {
             Platform.runLater(() -> {
                 UserFeedbackViewFxml.getInstance().showMessage(rb().getString("dialog.load.success"));
             });
+            resetQuitArmed();
         } catch (RuntimeException e) {
             e.printStackTrace();
             Platform.runLater(() -> {
@@ -107,6 +113,7 @@ class MenuController {
     }
 
     void help()  {
+        resetQuitArmed();
         Platform.runLater(() -> {
             String title   = rb().getString("help.title");
             String header  = rb().getString("help.header");
@@ -119,6 +126,8 @@ class MenuController {
     }
 
     void about() {
+        resetQuitArmed();
+        String title   = rb().getString("about.title");
         String name        = getProp("app.name", "MineSweeper SE");
         String version     = getProp("app.version", "1.0");
         String description = getProp("app.description", "MineSweeper SE Project");
@@ -127,7 +136,7 @@ class MenuController {
         Platform.runLater(() -> {
 
             UiDialogs.about(
-                    name, version, description, author, buildDate
+                    title, name, version, description, author, buildDate
             );
         });
     }
@@ -156,4 +165,27 @@ class MenuController {
         try { return aboutProps.getString(key); }
         catch (MissingResourceException e) { return defVal; }
     }
+    void quit() {
+        if (!gameService.hasUnsavedChanges()) {
+            Platform.exit();
+            return;
+        }
+
+        if (!quitArmed) {
+            quitArmed = true;
+            String msg = bundle.containsKey("quit.unsaved.pressAgain")
+                    ? bundle.getString("quit.unsaved.pressAgain")
+                    : "Hai modifiche non salvate. Premi di nuovo ‘Quit’ per uscire.";
+            UserFeedbackViewFxml.getInstance().showMessageSticky(msg);
+        } else {
+            Platform.exit();
+        }
+    }
+
+    void userDidSomething() {
+        quitArmed = false;
+        UserFeedbackViewFxml.getInstance().clearMessage();
+    }
+
+    private void resetQuitArmed(){ userDidSomething();}
 }

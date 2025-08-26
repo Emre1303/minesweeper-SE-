@@ -21,10 +21,10 @@ public final class UiDialogs {
         });
     }*/ //Non usato
 
-    public static void about(String appName, String version, String description, String author, String builtOn) {
+    public static void about(String title, String appName, String version, String description, String author, String builtOn) {
         Platform.runLater(() -> {
             Alert a = new Alert(Alert.AlertType.INFORMATION);
-            a.setTitle("About " + appName);
+            a.setTitle(title);
             a.setHeaderText(appName + "  |  Versione: " + version);
             a.setContentText(
                     description + "\n"

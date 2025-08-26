@@ -24,4 +24,5 @@ public interface GameService {
     List<int[]> revealAllMines();
     boolean isStarted();
     void endGame();
+    boolean hasUnsavedChanges();
 }

@@ -14,6 +14,8 @@ public class DefaultGameService implements GameService {
     private final GameModel model;
     private final GameRepository repo;
 
+    private boolean dirty = false;
+
     public DefaultGameService(GameModel model, GameRepository repo) {
         this.model = model;
         this.repo  = repo;
@@ -59,6 +61,7 @@ public class DefaultGameService implements GameService {
         }
 
         model.setStarted(true);
+        dirty = true;
     }
 
     @Override
@@ -99,6 +102,7 @@ public class DefaultGameService implements GameService {
         }
 
         model.incrementRevealedCount(opened.size());
+        if(!opened.isEmpty()) dirty = true;
         return opened;
     }
 
@@ -107,6 +111,7 @@ public class DefaultGameService implements GameService {
         if (!model.isRevealed(r, c)) {
             boolean now = model.isFlagged(r, c);
             model.setFlagAt(r, c, !now);
+            if(now != model.isFlagged(r,c)) dirty = true;
         }
     }
     @Override
@@ -138,8 +143,8 @@ public class DefaultGameService implements GameService {
     @Override public void setMines(int mines) { model.setMines(mines); }
 
 
-    @Override public void save(Path path) { repo.save(model, path); }
-    @Override public void load(Path path) { repo.load(model, path); }
+    @Override public void save(Path path) { repo.save(model, path);  dirty = false;}
+    @Override public void load(Path path) { repo.load(model, path); dirty = false; }
 
 
     @Override public int  getRows()                       { return model.getRows(); }
@@ -150,4 +155,5 @@ public class DefaultGameService implements GameService {
     @Override public boolean hasMineAt(int r,int c)       { return model.hasMineAt(r,c); }
     @Override public int  getNeighborCountAt(int r,int c) { return model.getNeighborCountAt(r,c); }
     @Override public int  getFlaggedCount()               { return model.getFlaggedCount(); }
+    @Override public boolean hasUnsavedChanges()          { return dirty;}
 }
