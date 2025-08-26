@@ -21,5 +21,4 @@ public class GameUiModel extends AbstractModel {
     public boolean hasMineAt(int r, int c) { return service.hasMineAt(r, c); }
     public int getNeighborCountAt(int r, int c) { return service.getNeighborCountAt(r, c); }
     public int getFlaggedCount() { return service.getFlaggedCount(); }
-    public boolean isWin() { return service.isWin(); }
 }

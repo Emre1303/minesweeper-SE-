@@ -9,15 +9,7 @@ import java.util.Optional;
 public final class UiDialogs {
     private UiDialogs() {}
 
-    public static void info(String title, String content) {
-        Platform.runLater(() -> {
-            Alert a = new Alert(Alert.AlertType.INFORMATION);
-            a.setTitle(title);
-            a.setHeaderText(null);
-            a.setContentText(content);
-            a.showAndWait();
-        });
-    }
+
 
     /*public static void error(String title, String content) {
         Platform.runLater(() -> {
