@@ -3,7 +3,7 @@ package ch.supsi.minesweeper.view;
 import ch.supsi.minesweeper.controller.GameController;
 import ch.supsi.minesweeper.controller.EventHandler;
 import ch.supsi.minesweeper.controller.GameEventHandler;
-import ch.supsi.minesweeper.uimodel.GameUiModel;
+import ch.supsi.minesweeper.model.GameUiModel;
 import ch.supsi.minesweeper.service.DefaultPreferenceService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

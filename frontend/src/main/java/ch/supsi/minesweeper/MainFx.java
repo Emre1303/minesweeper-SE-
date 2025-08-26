@@ -7,14 +7,12 @@ import ch.supsi.minesweeper.service.GameService;
 import ch.supsi.minesweeper.service.DefaultPreferenceService;
 import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.model.GameModel;
-import ch.supsi.minesweeper.uimodel.GameUiModel;
+import ch.supsi.minesweeper.model.GameUiModel;
 import ch.supsi.minesweeper.view.*;
-import ch.supsi.minesweeper.view.UiDialogs;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import javafx.application.Platform;
 
 import java.util.List;
 import java.util.Locale;

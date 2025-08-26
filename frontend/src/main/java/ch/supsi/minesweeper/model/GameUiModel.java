@@ -1,6 +1,5 @@
-package ch.supsi.minesweeper.uimodel;
+package ch.supsi.minesweeper.model;
 
-import ch.supsi.minesweeper.model.AbstractModel;
 import ch.supsi.minesweeper.service.GameService;
 
 
