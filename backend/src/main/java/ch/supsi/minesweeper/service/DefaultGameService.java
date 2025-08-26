@@ -127,6 +127,7 @@ public class DefaultGameService implements GameService {
                 }
             }
         }
+        dirty = false;
         return mines;
     }
 
