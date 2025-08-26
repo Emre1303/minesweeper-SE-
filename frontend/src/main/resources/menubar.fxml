@@ -2,20 +2,27 @@
 
 <?import javafx.scene.control.*?>
 <MenuBar fx:id="menuBar" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-    <Menu fx:id="fileMenu" mnemonicParsing="false" text="File">
-        <MenuItem fx:id="newMenuItem" mnemonicParsing="false" disable="false" text="New"/>
-        <MenuItem fx:id="openMenuItem" mnemonicParsing="false" disable="false" text="Open..."/>
-        <SeparatorMenuItem fx:id="sep1" mnemonicParsing="false"/>
-        <MenuItem fx:id="saveMenuItem" mnemonicParsing="false" disable="true" text="Save"/>
-        <MenuItem fx:id="saveAsMenuItem" mnemonicParsing="false" disable="true" text="Save as..."/>
-        <SeparatorMenuItem fx:id="sep2" mnemonicParsing="false"/>
-        <MenuItem fx:id="quitMenuItem" mnemonicParsing="false" disable="false" text="Quit"/>
+
+    <!-- File / Partita -->
+    <Menu fx:id="fileMenu" mnemonicParsing="false" text="%menu.file.game">
+        <MenuItem fx:id="newMenuItem"  mnemonicParsing="false" text="%menu.file.new"/>
+        <MenuItem fx:id="openMenuItem" mnemonicParsing="false" text="%menu.file.open"/>
+        <SeparatorMenuItem/>
+        <MenuItem fx:id="saveMenuItem"   mnemonicParsing="false" text="%menu.file.save"   disable="true"/>
+        <MenuItem fx:id="saveAsMenuItem" mnemonicParsing="false" text="%menu.file.saveas" disable="true"/>
+        <SeparatorMenuItem/>
+        <MenuItem fx:id="quitMenuItem" mnemonicParsing="false" text="%menu.file.quit"/>
     </Menu>
-    <Menu fx:id="editMenu" mnemonicParsing="false" text="Edit">
-        <MenuItem fx:id="preferencesMenuItem" mnemonicParsing="false" disable="false" text="Preferences..."/>
+
+    <!-- Edit / Modifica -->
+    <Menu fx:id="editMenu" mnemonicParsing="false" text="%menu.edit">
+        <MenuItem fx:id="preferencesMenuItem" mnemonicParsing="false" text="%menu.preferences"/>
     </Menu>
-    <Menu fx:id="helpMenu" mnemonicParsing="false" text="Help">
-        <MenuItem fx:id="aboutMenuItem" mnemonicParsing="false" disable="false" text="About"/>
-        <MenuItem fx:id="helpMenuItem" mnemonicParsing="false" disable="false" text="Help"/>
+
+    <!-- Help / Aiuto -->
+    <Menu fx:id="helpMenu" mnemonicParsing="false" text="%menu.help">
+        <MenuItem fx:id="helpMenuItem"  mnemonicParsing="false" text="%help.title"/>
+        <MenuItem fx:id="aboutMenuItem" mnemonicParsing="false" text="%menu.about"/>
     </Menu>
+
 </MenuBar>

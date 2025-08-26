@@ -5,7 +5,6 @@ import ch.supsi.minesweeper.controller.EventHandler;
 import ch.supsi.minesweeper.controller.GameEventHandler;
 import ch.supsi.minesweeper.uimodel.GameUiModel;
 import ch.supsi.minesweeper.service.DefaultPreferenceService;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -89,7 +88,6 @@ public class MenuBarViewFxml implements ControlledFxView {
         // Apri partita
         openMenuItem.setOnAction(e -> {
             ((GameController) gameEventHandler).open();
-            // Quando si apre una partita, ora c’è qualcosa da salvare
             enableSaveOptions();
         });
 
